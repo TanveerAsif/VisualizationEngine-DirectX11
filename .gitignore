@@ -3,5 +3,7 @@ x64/*
 DirectX11/Debug/*
 DirectX11/Release/*
 DirectX11/x64/*
-
+*.suo
+*.db
+*.opendb
 
