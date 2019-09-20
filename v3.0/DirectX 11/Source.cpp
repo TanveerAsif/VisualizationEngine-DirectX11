@@ -10,11 +10,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 {
 
 	g_pEngine = new Dx11_Engine();
-	//"../../Data/Volume_Pores_tiff.raw", 589,982,32)
-	//"../../Data/ImageData.raw", 983, 484, 305
-	//"../../Data/ImageData.raw", 2000, 1232, 773
-	//"../../Data/bighead.den", 256, 256, 225
-	if (g_pEngine->Initialize(0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), "../../Data/bighead.den", 256, 256, 225))
+	//"../../../Data/Volume_Pores_tiff.raw", 589,982,32)
+	//"../../../Data/ImageData.raw", 983, 484, 305
+	//"../../../Data/ImageData.raw", 2000, 1232, 773
+	//"../../../Data/bighead.den", 256, 256, 225
+	if (g_pEngine->Initialize(0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), "../../../Data/bighead.den", 256, 256, 225))
 	{
 		g_pEngine->Run();
 	}
