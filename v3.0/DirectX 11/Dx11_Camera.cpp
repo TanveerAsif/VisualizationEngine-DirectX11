@@ -3,29 +3,12 @@
 
 Dx11_Camera::Dx11_Camera()
 {
-	m_fYaw = m_fPitch = m_fRoll = 0.0f;
+	m_fYaw = m_fPitch = 0.0f;
 	m_vUp = D3DXVECTOR3(0, 1, 0);
-	m_vPos = D3DXVECTOR3(0, 0, -10);
+	m_vPos = D3DXVECTOR3(0, 12, -100);
 	m_vFrwdDir = D3DXVECTOR3(0, 0, 1);
 	
-	/*D3DXVECTOR3 vDir;
-	vDir.x = cosf(m_fPitch)*sinf(m_fYaw);
-	vDir.y = sinf(m_fPitch);
-	vDir.z = cosf(m_fPitch)*cosf(m_fYaw);
-
-	D3DXVECTOR2 vFrwdDir = D3DXVECTOR2(vDir.x, vDir.z);
-	D3DXVec2Normalize(&vFrwdDir, &vFrwdDir);
-	m_vFrwdDir = D3DXVECTOR3(vFrwdDir.x, 0.0f, vFrwdDir.y);*/
-
-	D3DXMATRIX matRotation;
-	D3DXMatrixRotationYawPitchRoll(&matRotation, m_fYaw, m_fPitch, m_fRoll);
-
-
-	D3DXVECTOR3 vTarget;
-	D3DXVec3Add(&vTarget, &m_vPos, &m_vFrwdDir);
-	D3DXMatrixLookAtLH(&m_ViewMat, &m_vPos, &vTarget, &m_vUp);
-
-
+	D3DXMatrixLookAtLH(&m_ViewMat, &m_vPos, &m_vFrwdDir, &m_vUp);
 }
 
 
@@ -37,7 +20,7 @@ Dx11_Camera::~Dx11_Camera()
 
 //void Dx11_Camera::Process()
 //{
-//1
+//
 //	
 //	D3DXVECTOR3 up = D3DXVECTOR3(0,1,0);
 //	
@@ -94,6 +77,7 @@ void Dx11_Camera::UpdateCamera(char in)
 				}
 
 			}
+
 		}
 		break;
 
@@ -115,9 +99,7 @@ void Dx11_Camera::UpdateCamera(char in)
 				{
 					Move(&m_vPos, ryt, amt);			//CHANGING POS								
 				}
-
-			}
-
+			}			
 		}
 		break;
 
@@ -130,8 +112,7 @@ void Dx11_Camera::UpdateCamera(char in)
 			else
 			{
 				Move(&m_vPos, m_vFrwdDir, amt);
-			}
-		
+			}			
 		}
 		break;
 
@@ -144,7 +125,7 @@ void Dx11_Camera::UpdateCamera(char in)
 			else
 			{
 				Move(&m_vPos, m_vFrwdDir, -amt);
-			}
+			}			
 		}
 		break;
 
@@ -180,7 +161,7 @@ void Dx11_Camera::UpdateCamera(char in)
 			m_fPitch = 0.0f;
 			m_fYaw = 0.0f;
 			m_vUp = D3DXVECTOR3(0, 1, 0);
-			m_vPos = D3DXVECTOR3(0, 0, -10);
+			m_vPos = D3DXVECTOR3(0, 10, -100);
 			m_vFrwdDir = D3DXVECTOR3(0, 0, 1);
 			break;
 		}
@@ -205,16 +186,17 @@ void Dx11_Camera::UpdateCamera(char in)
 	vDir.y = sinf(m_fPitch);
 	vDir.z = cosf(m_fPitch)*cosf(m_fYaw);
 
-	D3DXVECTOR2 vFrwdDir = D3DXVECTOR2(vDir.x, vDir.z);
-	D3DXVec2Normalize(&vFrwdDir, &vFrwdDir);
-	m_vFrwdDir = D3DXVECTOR3(vFrwdDir.x, 0.0f, vFrwdDir.y);
-	//m_vFrwdDir = vDir;
+	////D3DXVECTOR2 vFrwdDir = D3DXVECTOR2(vDir.x, vDir.z);
+	////D3DXVec2Normalize(&vFrwdDir, &vFrwdDir);
+	////m_vFrwdDir = D3DXVECTOR3(vFrwdDir.x, 0.0f, vFrwdDir.y);
+	m_vFrwdDir = vDir;
+	
 
+	D3DXVECTOR3 vTarget = m_vPos + m_vFrwdDir;
+	
 
-	D3DXVECTOR3 vTarget;
-	D3DXVec3Add(&vTarget, &m_vPos, &m_vFrwdDir);
 	D3DXMatrixLookAtLH(&m_ViewMat, &m_vPos, &vTarget, &m_vUp);
-
+	
 }
 
 
@@ -263,6 +245,8 @@ D3DXMATRIX Dx11_Camera::GetViewMatrix(float posx, float posy, float posz, float 
 
 	return matReflection;
 }
+
+
 
 void Dx11_Camera::UpdateCamera(D3DXVECTOR2 _vPoint, D3DXMATRIX _matView, D3DXMATRIX _matProj)
 {
