@@ -101,7 +101,7 @@ bool Dx11_Graphics::Initialize(HWND hWnd, UINT _width, UINT _height, std::string
 		
 		D3DXMATRIX matViewMatrix = m_pCamera->GetViewMatrix();
 		bRetValue = m_pText->Initialize(pDevice, pDeviceContext,
-			"../../Data/fontdata.txt", L"../../Data/font.dds",
+			"../../../Data/fontdata.txt", L"../../../Data/font.dds",
 			matViewMatrix,
 			m_nScreenWidth, m_nScreenHeight
 		);
@@ -138,10 +138,10 @@ bool Dx11_Graphics::Initialize(HWND hWnd, UINT _width, UINT _height, std::string
 		m_pBackFaceSurface->Initialize(pDevice, SHADOW_WIDTH, SHADOW_HEIGHT, SCREEN_NEAR, SCREEN_DEPTH);
 
 		//
-		m_pFrontModel->LoadFloor(pDevice, L"../../Data/dummy.dds");
-		m_pBackModel->LoadFloor(pDevice, L"../../Data/dummy.dds");
-		m_pFrontShader->InitializeFloorShader(pDevice, pDeviceContext, L"../../Data/MyShaderFloor.hlsl");
-		m_pBackShader->InitializeFloorShader(pDevice, pDeviceContext, L"../../Data/MyShaderFloor.hlsl");
+		m_pFrontModel->LoadFloor(pDevice, L"../../../Data/dummy.dds");
+		m_pBackModel->LoadFloor(pDevice, L"../../../Data/dummy.dds");
+		m_pFrontShader->InitializeFloorShader(pDevice, pDeviceContext, L"../../../Data/MyShaderFloor.hlsl");
+		m_pBackShader->InitializeFloorShader(pDevice, pDeviceContext, L"../../../Data/MyShaderFloor.hlsl");
 
 #endif
 	}
@@ -249,7 +249,7 @@ void Dx11_Graphics::RenderScene(float _fTick)
 	{
 		ID3D11DeviceContext *pDeviceContext = m_pDirect3D->GetDeviceContext();
 		D3DXMATRIX viewMat, worldMat, projectionMat, orthoMat;
-		D3DXMATRIX matRotY, matTranslate, matRot, matScale, matTransform;
+		D3DXMATRIX matRotX, matRotY, matTranslate, matRot, matScale, matTransform;
 
 		viewMat = m_pCamera->GetViewMatrix();
 		projectionMat = m_pDirect3D->GetPerspectiveProjectionMatrix();
@@ -258,14 +258,19 @@ void Dx11_Graphics::RenderScene(float _fTick)
 #ifndef VOLUME_RENDER
 
 		if (m_pAssimp)
-		{		
+		{	
 			worldMat = m_pDirect3D->GetWorldMatrix();
 			D3DXMatrixTranslation(&matTranslate, 0.0f, -10.0f, 100.0f);
 			D3DXMatrixRotationY(&matRotY, -1 * D3DX_PI * 90 / 180);
+			
+			D3DXMatrixRotationX(&matRotX, D3DX_PI * 90 / 180);
 			D3DXMatrixScaling(&matScale, 0.2f, 0.2f, 0.2f);
-			worldMat = matScale * matRotY * matTranslate * worldMat;
+			//worldMat = matScale * matRotY * matTranslate * worldMat;
+			//worldMat =  matRotX * worldMat;
 
 			m_pAssimp->Render(m_pDirect3D->GetDevice(), pDeviceContext, worldMat, viewMat, projectionMat);
+
+			
 		}
 
 #else

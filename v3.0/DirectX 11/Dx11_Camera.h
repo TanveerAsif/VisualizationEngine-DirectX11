@@ -6,17 +6,17 @@ class Dx11_Camera
 {
 private:
 
-	D3DXVECTOR2						m_vLastDragPoint = {0.0f, 0.0f};
+	D3DXVECTOR2					m_vLastDragPoint = {0.0f, 0.0f};
 
-	float m_fRoll, m_fPitch, m_fYaw;
-	D3DXVECTOR3 m_vPos, m_vUp, m_vFrwdDir;
-	D3DXMATRIX m_ViewMat;
+	float						m_fPitch, m_fYaw;
+	D3DXVECTOR3					m_vPos, m_vUp, m_vFrwdDir;
+	
+	D3DXMATRIX					m_ViewMat;
 
+	void						Move(D3DXVECTOR3 *pos, D3DXVECTOR3 dir, int amount);
+	D3DXVECTOR3					GetLeft();
+	D3DXVECTOR3					GetRight();
 
-
-	void Move(D3DXVECTOR3 *pos, D3DXVECTOR3 dir, int amount);
-	D3DXVECTOR3 GetLeft();
-	D3DXVECTOR3 GetRight();
 
 public:
 	Dx11_Camera();
@@ -34,7 +34,8 @@ public:
 
 	D3DXVECTOR3 GetDirection() { return m_vFrwdDir; }
 
-	void UpdateCamera(D3DXVECTOR2 _vPoint, D3DXMATRIX _matView, D3DXMATRIX _matProj);
+	//MOUSE Rotation
+	void UpdateCamera(D3DXVECTOR2 _vPoint, D3DXMATRIX _matView, D3DXMATRIX _matProj);	
 	void SetLastDragPoint(D3DXVECTOR2 _vPoint);
 };
 
