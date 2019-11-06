@@ -92,7 +92,7 @@ bool Dx11_VolumeRendering::InitRayCast(ID3D11Device * pDevice)
 	//Init Shader
 	ID3D10Blob *pError, *pVSBuffer, *pPSBuffer;
 
-	hr = D3DX11CompileFromFile(L"../../../Data/VolumeShaderRayCast.hlsl", NULL, NULL, "FaceVS", "vs_4_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, NULL
+	hr = D3DX11CompileFromFile(L"../../Data/VolumeShaderRayCast.hlsl", NULL, NULL, "FaceVS", "vs_4_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, NULL
 		, &pVSBuffer, &pError, NULL);
 	if (hr != S_OK)
 	{
@@ -100,7 +100,7 @@ bool Dx11_VolumeRendering::InitRayCast(ID3D11Device * pDevice)
 		char *pCompileError = (char *)(pError->GetBufferPointer());
 		unsigned long bufferSize = pError->GetBufferSize();
 
-		fopen_s(&fp, "../../../Data/ShaderCompileError.txt", "w");
+		fopen_s(&fp, "../../Data/ShaderCompileError.txt", "w");
 		if (fp)
 		{
 			for (int i = 0; i < bufferSize; i++)
@@ -113,7 +113,7 @@ bool Dx11_VolumeRendering::InitRayCast(ID3D11Device * pDevice)
 	}
 
 
-	hr = D3DX11CompileFromFile(L"../../../Data/VolumeShaderRayCast.hlsl", NULL, NULL, "FacePS", "ps_4_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, NULL
+	hr = D3DX11CompileFromFile(L"../../Data/VolumeShaderRayCast.hlsl", NULL, NULL, "FacePS", "ps_4_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, NULL
 		, &pPSBuffer, &pError, NULL);
 	if (hr != S_OK)
 		return false;
@@ -180,7 +180,7 @@ bool Dx11_VolumeRendering::InitRayCast(ID3D11Device * pDevice)
 
 
 	//Init Ray Shader
-	hr = D3DX11CompileFromFile(L"../../../Data/VolumeShaderRayCast.hlsl", NULL, NULL, "RayVS", "vs_4_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, NULL
+	hr = D3DX11CompileFromFile(L"../../Data/VolumeShaderRayCast.hlsl", NULL, NULL, "RayVS", "vs_4_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, NULL
 		, &pVSBuffer, &pError, NULL);
 	if (hr != S_OK)
 	{
@@ -188,7 +188,7 @@ bool Dx11_VolumeRendering::InitRayCast(ID3D11Device * pDevice)
 		char *pCompileError = (char *)(pError->GetBufferPointer());
 		unsigned long bufferSize = pError->GetBufferSize();
 
-		fopen_s(&fp, "../../../Data/ShaderCompileError.txt", "w");
+		fopen_s(&fp, "../../Data/ShaderCompileError.txt", "w");
 		if (fp)
 		{
 			for (int i = 0; i < bufferSize; i++)
@@ -201,7 +201,7 @@ bool Dx11_VolumeRendering::InitRayCast(ID3D11Device * pDevice)
 	}
 
 
-	hr = D3DX11CompileFromFile(L"../../../Data/VolumeShaderRayCast.hlsl", NULL, NULL, "RayPS", "ps_4_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, NULL
+	hr = D3DX11CompileFromFile(L"../../Data/VolumeShaderRayCast.hlsl", NULL, NULL, "RayPS", "ps_4_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, NULL
 		, &pPSBuffer, &pError, NULL);
 	if (hr != S_OK)
 		return false;
@@ -291,7 +291,7 @@ bool Dx11_VolumeRendering::Init(ID3D11Device *pDevice)
 
 #ifdef TEXTURE_3D
 	   
-	bRetValue = InitShaderResource(pDevice, L"../../../Data/VolumeShaderViewAlignedSlicing.hlsl");
+	bRetValue = InitShaderResource(pDevice, L"../../Data/VolumeShaderViewAlignedSlicing.hlsl");
 	if (!bRetValue)
 		return false;
 
@@ -300,7 +300,7 @@ bool Dx11_VolumeRendering::Init(ID3D11Device *pDevice)
 		return false;
 
 
-	bRetValue = InitPolygonShader(pDevice, L"../../../Data/VolumePolygonShader.hlsl");
+	bRetValue = InitPolygonShader(pDevice, L"../../Data/VolumePolygonShader.hlsl");
 	if (!bRetValue)
 		return false;
 	m_pDevice = pDevice;//Use IN Rendering
@@ -806,7 +806,7 @@ bool Dx11_VolumeRendering::InitShaderResource(ID3D11Device *pDevice, WCHAR *szSh
 		char *pCompileError = (char *)(pError->GetBufferPointer());
 		unsigned long bufferSize = pError->GetBufferSize();
 
-		fopen_s(&fp, "../../../Data/ShaderCompileError.txt", "w");
+		fopen_s(&fp, "../../Data/ShaderCompileError.txt", "w");
 		if (fp)
 		{
 			for (int i = 0; i < bufferSize; i++)

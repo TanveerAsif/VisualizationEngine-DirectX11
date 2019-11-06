@@ -782,7 +782,7 @@ bool Dx11_Shaders::InitializeFontShader(ID3D11Device *pDevice, ID3D11DeviceConte
 		char *pCompileError = (char *)(pError->GetBufferPointer());
 		unsigned long bufferSize = pError->GetBufferSize();
 
-		fopen_s(&fp, "../../../Data/ShaderCompileError.txt", "w");
+		fopen_s(&fp, "../../Data/ShaderCompileError.txt", "w");
 		if (fp)
 		{
 			for (int i = 0; i < bufferSize; i++)

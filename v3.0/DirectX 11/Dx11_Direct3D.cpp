@@ -162,7 +162,7 @@ bool Dx11_Direct3D::Initialize(HWND hWnd, int screenWidth, int screenHeight)
 							rasterDesc.DepthClipEnable = true;
 							rasterDesc.FillMode = D3D11_FILL_SOLID;
 							rasterDesc.FrontCounterClockwise = true;
-							rasterDesc.MultisampleEnable =  true; //false
+							rasterDesc.MultisampleEnable = false;// true;
 							rasterDesc.ScissorEnable = false;
 							rasterDesc.SlopeScaledDepthBias = 0.0f;
 							hr = m_pDevice->CreateRasterizerState(&rasterDesc, &m_pRasterState);
@@ -234,9 +234,14 @@ bool Dx11_Direct3D::Initialize(HWND hWnd, int screenWidth, int screenHeight)
 								float fieldOfView = (float)D3DX_PI / 4.0f;
 								float screenAspect =  (float)screenWidth / (float)screenHeight;
 								D3DXMatrixPerspectiveFovLH(&m_matProjection, fieldOfView, screenAspect, 0.001f, 10000.0f);
+
+
 								D3DXMatrixOrthoLH(&m_matOrtho, (float)screenWidth, (float)screenHeight, 0.001, 10000.0f);
-								
+
+
 								bFlag = true;
+
+
 
 								D3D11_BLEND_DESC blendDesc;
 								ZeroMemory(&blendDesc, sizeof(blendDesc));
