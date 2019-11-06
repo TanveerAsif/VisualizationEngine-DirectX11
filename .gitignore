@@ -1,11 +1,5 @@
-.vs/*
-x64/*
-DirectX11/Debug/*
-DirectX11/Release/*
-DirectX11/x64/*
-Debug/*
-Release/*
-*.suo
-*.db
-*.opendb
-
+/v3.0/.vs
+/v3.0/x64
+/v3.0/DirectX 11/x64
+/v3.0/DirectX 11/Debug
+/v3.0/DirectX 11/Release
