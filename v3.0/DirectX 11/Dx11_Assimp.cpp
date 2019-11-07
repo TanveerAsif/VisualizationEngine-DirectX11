@@ -194,10 +194,11 @@ bool Dx11_Assimp::InitAssimp(HWND hWnd, ID3D11Device * pDevice, ID3D11DeviceCont
 
 	//MULTIPLE MESH LOAD
 	bool bFlag = false;
+	////////bFlag = LoadMesh("Data/Spider_ascii.stl");
+	////////bFlag = LoadMesh("Data/spider.obj");
+	//////////bFlag = LoadMesh("Data/L200-OBJ/L200-OBJ.obj");
+	bFlag = LoadMesh("../../Data/Spider/spider.obj");
 	
-	////bFlag = LoadMesh("../../../Data/Spider/spider.obj");
-	bFlag = LoadMesh("../../../Data/Land/under_land.x");
-	////bFlag = LoadMesh("../../../Data/Dragon 2.5/Dragon 2.5.stl");
 	
 
 	return bFlag;
@@ -290,7 +291,7 @@ bool Dx11_Mesh::InitializeShader(ID3D11Device * pDevice, WCHAR * szShaderFilenam
 		char *pCompileError = (char *)(pError->GetBufferPointer());
 		unsigned long bufferSize = pError->GetBufferSize();
 
-		fopen_s(&fp, "../../../Data/ShaderCompileError.txt", "w");
+		fopen_s(&fp, "../../Data/ShaderCompileError.txt", "w");
 		if (fp)
 		{
 			for (int i = 0; i < bufferSize; i++)
@@ -385,7 +386,7 @@ Dx11_Mesh::Dx11_Mesh(ID3D11Device *pDevice, std::vector<stVertex> vVertices, std
 	//Initialize Vertex Buffer and Index Buffer
 	setupMesh(pDevice);
 
-	InitializeShader(m_pDevice, L"../../../Data/MeshShader.hlsl");
+	InitializeShader(m_pDevice, L"../../Data/MeshShader.hlsl");
 }
 
 Dx11_Mesh::~Dx11_Mesh()

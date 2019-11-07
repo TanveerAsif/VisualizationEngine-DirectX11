@@ -97,7 +97,7 @@ bool Dx11_Text::Initialize(ID3D11Device *pDevice, ID3D11DeviceContext *pContext,
 		if (!bFlag)
 			return false;
 
-		bFlag = m_pFontShader->InitializeFontShader(pDevice, NULL, L"../../../Data/MyFontShader.hlsl");
+		bFlag = m_pFontShader->InitializeFontShader(pDevice, NULL, L"../../Data/MyFontShader.hlsl");
 		if (!bFlag)
 			return false;
 
