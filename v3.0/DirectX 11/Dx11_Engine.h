@@ -28,7 +28,7 @@ public:
 	~Dx11_Engine();
 
 
-	bool Initialize(HWND _hWnd, unsigned int _uWidth, unsigned int _uHeight, std::string _strRawFilePath, UINT _ImageWidth, UINT _ImageHeight, UINT _NoOfImages);
+	bool Initialize(HWND _hWnd, unsigned int _uWidth, unsigned int _uHeight);
 	void Run();
 	void Shutdown();
 	LRESULT CALLBACK MessageHandler(HWND, UINT, WPARAM, LPARAM);

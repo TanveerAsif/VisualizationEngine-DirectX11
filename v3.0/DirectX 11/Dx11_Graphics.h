@@ -26,14 +26,8 @@ private:
 	Dx11_Direct3D			*m_pDirect3D = NULL;
 	Dx11_Camera				*m_pCamera = NULL;
 	Dx11_Text				*m_pText = NULL;
-	Dx11_Assimp				*m_pAssimp = NULL;
-	Dx11_VolumeRendering	*m_pVolRender;
-	Dx11_Render2Texture		*m_pFrontFaceSurface = NULL, *m_pBackFaceSurface = NULL;
+	Dx11_Assimp				*m_pAssimp = NULL;	
 	
-	//To Show FRONT & BACK Render Texture
-	Dx11_Model				*m_pFrontModel = NULL, *m_pBackModel = NULL;
-	Dx11_Shaders			*m_pFrontShader = NULL, *m_pBackShader = NULL;
-
 	UINT					m_nScreenWidth, m_nScreenHeight;
 
 	float					m_fTickCount;
@@ -49,13 +43,10 @@ private:
 
 
 	void					RenderScene(float _fTick);
-	void					RenderFrontFace(float _fTick);
-	void					RenderBackFace(float _fTick);
-
 public:
 	Dx11_Graphics();
 	~Dx11_Graphics();
-	bool					Initialize(HWND hWnd, UINT _width, UINT _height, std::string _strRawFilePath, UINT _ImageWidth, UINT _ImageHeight, UINT _NoOfImages);
+	bool					Initialize(HWND hWnd, UINT _width, UINT _height);
 	void					Process(float _fTick);
 	void					Render(float _fTick);	
 	void					Shutdown();

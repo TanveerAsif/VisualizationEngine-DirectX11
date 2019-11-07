@@ -21,32 +21,29 @@ Dx11_Engine::~Dx11_Engine()
 }
 
 
-bool Dx11_Engine::Initialize(HWND _hWnd, unsigned int _uWidth, unsigned int _uHeight, std::string _strRawFilePath, UINT _ImageWidth, UINT _ImageHeight, UINT _NoOfImages)
+bool Dx11_Engine::Initialize(HWND _hWnd, unsigned int _uWidth, unsigned int _uHeight)
 {
 	bool bRetValue = false;
 
 #ifdef VISUALIZATION_APPLICATION
-	if (InitializeWindow())
-	{
+	if (!InitializeWindow())
+		return false;
 #else
 	m_hWnd = _hWnd;
 #endif		
-		m_pGraphics = new Dx11_Graphics();
-		m_pInput = new Dx11_Input();
 
-		if (m_pGraphics && m_pInput)
+	m_pGraphics = new Dx11_Graphics();
+	m_pInput = new Dx11_Input();
+
+	if (m_pGraphics && m_pInput)
+	{
+		m_pInput->Initialize();			
+		if (m_pGraphics->Initialize(m_hWnd, _uWidth, _uHeight))
 		{
-			m_pInput->Initialize();
-			
-			if (m_pGraphics->Initialize(m_hWnd, _uWidth, _uHeight, _strRawFilePath,  _ImageWidth,  _ImageHeight,  _NoOfImages))
-			{
-				bRetValue = true;
-			}			
-		}
-#ifdef VISUALIZATION_APPLICATION
+			bRetValue = true;
+		}			
 	}
-#endif
-
+	
 	return bRetValue;
 }
 
