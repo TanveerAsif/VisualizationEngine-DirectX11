@@ -231,7 +231,7 @@ void Dx11_VolumeRendering::RenderRay(ID3D11DeviceContext * _pDeviceContext, D3DX
 	D3DXMATRIX matRotationX,matRotationY, matTransform;
 	D3DXMatrixRotationY(&matRotationY, ((m_fYaw / 360.0f ) * D3DX_PI));
 	D3DXMatrixRotationX(&matRotationX, ((180 / 360.0f) * D3DX_PI));
-	matTransform = /*matRotationX * matRotationY  **/ _w;
+	matTransform = matRotationX * matRotationY  * _w;
 
 	//D3DXMatrixTranspose(&_w, &_w);
 	D3DXMatrixTranspose(&matTransform, &matTransform);
