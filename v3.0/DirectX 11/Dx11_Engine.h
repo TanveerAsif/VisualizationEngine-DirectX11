@@ -18,10 +18,8 @@ private:
 	Dx11_Input		*m_pInput;
 
 	bool			m_bLButtonDown = false;
-private:	
-	bool InitializeWindow();
-	
 
+	bool InitializeWindow();
 
 public:
 	Dx11_Engine();

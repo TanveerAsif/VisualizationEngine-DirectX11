@@ -3,6 +3,7 @@
 #include <D3DX10math.h>
 #include <D3DX11async.h>
 
+
 class Dx11_Tessellation
 {
 
@@ -25,12 +26,12 @@ private:
 	ID3D11DomainShader *m_pDS;
 	ID3D11PixelShader  *m_pPS;
 
-	bool IntializeShader(ID3D10Device * _pDevice);
+	bool IntializeShader(ID3D11Device * _pDevice);
 public:
 	Dx11_Tessellation();
 	~Dx11_Tessellation();
 
-	bool Init(ID3D10Device *_pDevice, ID3D11DeviceContext *_pDeviceContext);
+	bool Init(ID3D11Device *_pDevice, ID3D11DeviceContext *_pDeviceContext);
 	void Render(ID3D11DeviceContext *_pDeviceContext);
 	void Release();
 };

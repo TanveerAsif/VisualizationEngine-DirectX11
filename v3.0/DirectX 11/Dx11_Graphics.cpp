@@ -61,13 +61,18 @@ bool Dx11_Graphics::Initialize(HWND hWnd, UINT _width, UINT _height)
 		if (!bRetValue)
 			return bRetValue;
 
-		m_pAssimp = new Dx11_Assimp();
+		/*m_pAssimp = new Dx11_Assimp();
 		bRetValue = m_pAssimp->InitAssimp(hWnd, pDevice, pDeviceContext);
 		if (!bRetValue)
 		{
 			MessageBox(hWnd, L"FAILED TO INITIALIZE ASSIMP : ", L"error", MB_ICONEXCLAMATION | MB_OK);
 			return bRetValue;
-		}
+		}*/
+		m_pTessellation = new Dx11_Tessellation();
+		bRetValue = m_pTessellation->Init(pDevice, pDeviceContext);
+		if (!bRetValue)
+			return bRetValue;
+
 	}
 	else
 		MessageBox(hWnd, L"COULD NOT INITIALIZE Direct3D", L"error", MB_ICONEXCLAMATION | MB_OK);

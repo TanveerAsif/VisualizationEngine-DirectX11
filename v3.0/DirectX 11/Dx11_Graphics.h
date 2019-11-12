@@ -7,7 +7,7 @@
 #include "Dx11_Assimp.h"
 #include "Dx11_VolumeRendering.h"
 #include "Dx11_Render2Texture.h"
-
+#include "Dx11_Tessellation.h"
 
 
 #ifdef VISUALIZATION_EXPORTS
@@ -19,7 +19,7 @@
 //#define MAX_NO_VOL 1
 
 
-class VISUALIZATION_API Dx11_Graphics
+class /*VISUALIZATION_API*/ Dx11_Graphics
 {
 	
 private:
@@ -27,7 +27,8 @@ private:
 	Dx11_Camera				*m_pCamera = NULL;
 	Dx11_Text				*m_pText = NULL;
 	Dx11_Assimp				*m_pAssimp = NULL;	
-	
+	Dx11_Tessellation		*m_pTessellation = nullptr;
+
 	UINT					m_nScreenWidth, m_nScreenHeight;
 
 	float					m_fTickCount;
