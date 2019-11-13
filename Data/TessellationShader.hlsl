@@ -9,7 +9,7 @@ struct VertexInput
 
 struct HullInput
 {
-	float3 Pos : POSITION;
+	float3 Position : POSITION;
 	float4 Color : COLOR;
 };
 
@@ -21,7 +21,7 @@ HullInput MyVertexShader(VertexInput input)
 {
     HullInput output;
     
-	output.Pos = input.Pos;	
+	output.Position = input.Pos;	
 	output.Color = input.Color;
     
     return output;
@@ -33,7 +33,7 @@ HullInput MyVertexShader(VertexInput input)
 //////////////////////////       2- Hull Shader                   //////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-cbuffer TessellationFactor
+cbuffer TessellationFactor : register(b0)
 {
 	float fTessAmount;
 	float3 padding;
@@ -49,15 +49,15 @@ struct PatchOutput
 
 PatchOutput PatchConstantFunction(InputPatch<HullInput, 3> inputPatch, uint patchId : SV_PrimitiveID)
 {
-	PatchOutput out;
+	PatchOutput output;
 	
-	out.edge[0] = fTessAmount;
-	out.edge[1] = fTessAmount;
-	out.edge[2] = fTessAmount;
+	output.edge[0] = fTessAmount;
+	output.edge[1] = fTessAmount;
+	output.edge[2] = fTessAmount;
 	
-	out.inside = fTessAmount;
+	output.inside = fTessAmount;
 	
-	return out;
+	return output;
 };
 
 
@@ -69,17 +69,17 @@ struct DomainInput
 
 [domain("tri")]
 [partitioning("integer")]
-[OutputTopology("triangle_cw")]
-[OutputControlPoints(3)]
-[patchConstantFunction("PatchConstantFunction")]
-DomainInput HullShader(InputPatch<HullInput, 3> inputPatch, uint pointId : SV_OutputControlPointID, uint patchID : SV_PrimitiveID)
+[outputtopology("triangle_cw")]
+[outputcontrolpoints(3)]
+[patchconstantfunc("PatchConstantFunction")]
+DomainInput MyHullShader(InputPatch<HullInput, 3> inputPatch, uint pointId : SV_OutputControlPointID, uint patchID : SV_PrimitiveID)
 {
-	DomainInput out;
+	DomainInput output;
 	
-	out.Pos = inputPatch[pointId].pos;
-	out.Color = inputPatch[pointId].Color;
+	output.Pos = inputPatch[pointId].Position;
+	output.Color = inputPatch[pointId].Color;
 	
-	return out;
+	return output;
 };
 
 
@@ -92,7 +92,7 @@ struct PixelInput
 	float4 color : COLOR;
 };
 
-cbuffer MatrixBuffer
+cbuffer MatrixBuffer: register(b1)
 {
 	matrix worldMat;
 	matrix viewMat;
@@ -101,22 +101,22 @@ cbuffer MatrixBuffer
 
 
 [domain("tri")]
-PixelInput DomainShader(PatchOutput input, float3 uvwCoord : SV_DomainLocation, const OutputPatch<HullInput, 3> patch)
+PixelInput MyDomainShader(PatchOutput input, float3 uvwCoord : SV_DomainLocation, const OutputPatch<HullInput, 3> patch)
 {
-	PixelInput out;
+	PixelInput output;
 	
 	//Determine new position of vertex
-	float3 vertexNewPos =  uvwCoord.x * patch[0].pos + uvwCoord.y * patch[1].pos + uvwCoord.z * patch[2].pos;
+	float3 vertexNewPos =  uvwCoord.x * patch[0].Position + uvwCoord.y * patch[1].Position + uvwCoord.z * patch[2].Position;
 	
 	
-	out.position = float4(vertexNewPos, 1.0f);
-	out.position = mul(out.position, worldMat);
-	out.position = mul(out.position, viewMat);
-	out.position = mul(out.position, projMat);
+	output.position = float4(vertexNewPos, 1.0f);
+	output.position = mul(output.position, worldMat);
+	output.position = mul(output.position, viewMat);
+	output.position = mul(output.position, projMat);
 	
 	
-	out.color = patch[0].Color;	
-	return out;
+	output.color = patch[0].Color;	
+	return output;
 };
 
 
@@ -125,7 +125,7 @@ PixelInput DomainShader(PatchOutput input, float3 uvwCoord : SV_DomainLocation, 
 ////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////       PS : Pixel Shader                //////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
-float4 PixelShader(PixelInput in) : SV_TARGET
+float4 MyPixelShader(PixelInput input) : SV_TARGET
 {
-	return in.color;
+	return input.color;
 };

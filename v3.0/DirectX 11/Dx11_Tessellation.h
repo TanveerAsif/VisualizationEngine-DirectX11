@@ -8,23 +8,26 @@ class Dx11_Tessellation
 {
 
 private:
-	struct MatrixBuffer
+
+	struct stWVPBuffer
 	{
 		D3DXMATRIX worldMat;
 		D3DXMATRIX viewMat;
 		D3DXMATRIX projMat;
 	};
 
-	struct TessellationBuffer
+	struct stTessellationBuffer
 	{
 		float fTessellationAmount;
 		float fPadding[3];
 	};
 
-	ID3D11VertexShader *m_pVS;
-	ID3D11HullShader   *m_pHS;
-	ID3D11DomainShader *m_pDS;
-	ID3D11PixelShader  *m_pPS;
+	ID3D11VertexShader *m_pVS = nullptr;
+	ID3D11HullShader   *m_pHS = nullptr;
+	ID3D11DomainShader *m_pDS = nullptr;
+	ID3D11PixelShader  *m_pPS = nullptr;
+	ID3D11InputLayout	*m_pInputLayout = nullptr;
+	ID3D11Buffer		*m_pWVPBuffer = nullptr, *m_pTessellationBuffer = nullptr;
 
 	bool IntializeShader(ID3D11Device * _pDevice);
 public:
@@ -32,7 +35,7 @@ public:
 	~Dx11_Tessellation();
 
 	bool Init(ID3D11Device *_pDevice, ID3D11DeviceContext *_pDeviceContext);
-	void Render(ID3D11DeviceContext *_pDeviceContext);
+	void Render(ID3D11DeviceContext *_pDeviceContext, unsigned int _uIndexCount ,D3DXMATRIX _worldMat, D3DXMATRIX _viewMat, D3DXMATRIX _projMat);
 	void Release();
 };
 

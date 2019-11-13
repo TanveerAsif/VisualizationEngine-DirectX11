@@ -98,6 +98,13 @@ void Dx11_Graphics::Render(float _fTick)
 
 void Dx11_Graphics::Shutdown()
 {
+	if (m_pTessellation)
+	{
+		m_pTessellation->Release();
+		delete m_pTessellation;
+		m_pTessellation = nullptr;
+	}
+
 	if (m_pAssimp)
 	{
 		m_pAssimp->ShutDown();
