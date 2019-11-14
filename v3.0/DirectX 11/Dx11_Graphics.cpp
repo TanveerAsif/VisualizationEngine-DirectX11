@@ -152,7 +152,15 @@ void Dx11_Graphics::RenderScene(float _fTick)
 		}
 
 		if (m_pTessellation)
+		{
+			m_pDirect3D->SetRasterWireframe();
+
+			worldMat = m_pDirect3D->GetWorldMatrix();
 			m_pTessellation->Render(pDeviceContext, 0, worldMat, viewMat, projectionMat);
+
+			m_pDirect3D->SetRasterSolid();
+		}
+			
 
 		//RENDER TEXT
 		//m_pDirect3D->SetDepthBufferOFF();

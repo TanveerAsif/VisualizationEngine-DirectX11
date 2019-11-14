@@ -213,7 +213,7 @@ void Dx11_Tessellation::Render(ID3D11DeviceContext * _pDeviceContext, unsigned i
 		if (hr != S_OK)
 			return;
 		stTessellationBuffer *pTessData = (stTessellationBuffer *)mappedTessRes.pData;
-		pTessData->fTessellationAmount = 12.0f;
+		pTessData->fTessellationAmount = 10.0f;
 		for (int i = 0; i < 3; i++)
 			pTessData->fPadding[i] = 0.0f;
 		_pDeviceContext->Unmap(m_pTessellationBuffer, 0);
@@ -245,7 +245,7 @@ void Dx11_Tessellation::Render(ID3D11DeviceContext * _pDeviceContext, unsigned i
 		_pDeviceContext->DrawIndexed(m_uiIndexCount, 0, 0);
 
 
-		//Clean the pipeline
+		//Remove the Shader from the Pipeline
 		_pDeviceContext->VSSetShader(nullptr, nullptr, 0);
 		_pDeviceContext->HSSetShader(nullptr, nullptr, 0);
 		_pDeviceContext->DSSetShader(nullptr, nullptr, 0);
