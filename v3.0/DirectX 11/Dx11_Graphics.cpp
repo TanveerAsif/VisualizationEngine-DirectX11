@@ -151,6 +151,9 @@ void Dx11_Graphics::RenderScene(float _fTick)
 			m_pAssimp->Render(m_pDirect3D->GetDevice(), pDeviceContext, worldMat, viewMat, projectionMat);
 		}
 
+		if (m_pTessellation)
+			m_pTessellation->Render(pDeviceContext, 0, worldMat, viewMat, projectionMat);
+
 		//RENDER TEXT
 		//m_pDirect3D->SetDepthBufferOFF();
 		m_pDirect3D->EnableBlendState();

@@ -8,6 +8,11 @@ class Dx11_Tessellation
 {
 
 private:
+	struct stVertex
+	{
+		D3DXVECTOR3 Pos;
+		D3DXVECTOR4 Color;		
+	};
 
 	struct stWVPBuffer
 	{
@@ -29,7 +34,10 @@ private:
 	ID3D11InputLayout	*m_pInputLayout = nullptr;
 	ID3D11Buffer		*m_pWVPBuffer = nullptr, *m_pTessellationBuffer = nullptr;
 
+	unsigned int         m_uiIndexCount = 0;
+	ID3D11Buffer		*m_pVertexBuffer = nullptr, *m_pIndexBuffer = nullptr;
 	bool IntializeShader(ID3D11Device * _pDevice);
+	bool IntializeGeometry(ID3D11Device * _pDevice);
 public:
 	Dx11_Tessellation();
 	~Dx11_Tessellation();

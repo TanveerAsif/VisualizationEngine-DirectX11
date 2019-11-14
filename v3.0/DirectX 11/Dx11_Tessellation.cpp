@@ -124,6 +124,54 @@ bool Dx11_Tessellation::IntializeShader(ID3D11Device * _pDevice)
 	return true;
 }
 
+bool Dx11_Tessellation::IntializeGeometry(ID3D11Device * _pDevice)
+{
+	int nVertexCount = 3;
+	stVertex *pVertex = new stVertex[nVertexCount];
+	pVertex[0].Pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	pVertex[0].Color = D3DXVECTOR4(1.0f, 0.0f, 0.0f, 1.0f);
+
+	pVertex[1].Pos = D3DXVECTOR3(1.0f, 0.0f, 0.0f);
+	pVertex[1].Color = D3DXVECTOR4(1.0f, 0.0f, 0.0f, 1.0f);
+
+	pVertex[2].Pos = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+	pVertex[2].Color = D3DXVECTOR4(1.0f, 0.0f, 0.0f, 1.0f);
+
+	D3D11_BUFFER_DESC vertexBuffDesc;
+	ZeroMemory(&vertexBuffDesc, sizeof(vertexBuffDesc));
+	vertexBuffDesc.Usage = D3D11_USAGE_DEFAULT;
+	vertexBuffDesc.ByteWidth = sizeof(stVertex) * nVertexCount;
+	vertexBuffDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;	
+	D3D11_SUBRESOURCE_DATA vertexBuffRes;
+	ZeroMemory(&vertexBuffRes, sizeof(vertexBuffRes));
+	vertexBuffRes.pSysMem = pVertex;
+	HRESULT hr = _pDevice->CreateBuffer(&vertexBuffDesc, &vertexBuffRes, &m_pVertexBuffer);
+	if (hr != S_OK)
+		return false;
+
+	m_uiIndexCount = 3;
+	unsigned int *pIndex = new unsigned int[m_uiIndexCount];
+	pIndex[0] = 0;
+	pIndex[1] = 1;
+	pIndex[2] = 2;
+	D3D11_BUFFER_DESC indexBuffDesc;
+	ZeroMemory(&indexBuffDesc, sizeof(indexBuffDesc));
+	indexBuffDesc.Usage = D3D11_USAGE_DEFAULT;
+	indexBuffDesc.ByteWidth = sizeof(unsigned int) * m_uiIndexCount;
+	indexBuffDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	D3D11_SUBRESOURCE_DATA indexBuffRes;
+	ZeroMemory(&indexBuffRes, sizeof(indexBuffRes));
+	indexBuffRes.pSysMem = pIndex;
+	hr = _pDevice->CreateBuffer(&indexBuffDesc, &indexBuffRes, &m_pIndexBuffer);
+	if (hr != S_OK)
+		return false;
+	
+	delete pVertex;
+	delete pIndex;
+
+	return true;
+}
+
 Dx11_Tessellation::Dx11_Tessellation()
 {
 }
@@ -135,9 +183,12 @@ Dx11_Tessellation::~Dx11_Tessellation()
 
 bool Dx11_Tessellation::Init(ID3D11Device * _pDevice, ID3D11DeviceContext * _pDeviceContext)
 {
+	//Init Shader
 	if (IntializeShader(_pDevice))
 	{
-
+		//Init Geomtery
+		if (IntializeGeometry(_pDevice))
+			return true;		
 	}
 	return false;
 }
@@ -147,6 +198,14 @@ void Dx11_Tessellation::Render(ID3D11DeviceContext * _pDeviceContext, unsigned i
 	if (_pDeviceContext)
 	{
 		_pDeviceContext->IASetInputLayout(m_pInputLayout);
+
+		//SetVertex Buffer
+		UINT stride = sizeof(stVertex);
+		UINT offset = 0;
+		_pDeviceContext->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &stride, &offset);
+		_pDeviceContext->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		_pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
+
 
 		//Set Buffer To Hull Shader
 		D3D11_MAPPED_SUBRESOURCE mappedTessRes;
@@ -182,12 +241,32 @@ void Dx11_Tessellation::Render(ID3D11DeviceContext * _pDeviceContext, unsigned i
 		_pDeviceContext->DSSetShader(m_pDS, nullptr, 0);
 		_pDeviceContext->PSSetShader(m_pPS, nullptr, 0);
 
-		_pDeviceContext->DrawIndexed(_uIndexCount, 0, 0);
+		//_uIndexCount : NOT USING HERE : SHOULD BE REMOVE AS PARAMTER
+		_pDeviceContext->DrawIndexed(m_uiIndexCount, 0, 0);
+
+
+		//Clean the pipeline
+		_pDeviceContext->VSSetShader(nullptr, nullptr, 0);
+		_pDeviceContext->HSSetShader(nullptr, nullptr, 0);
+		_pDeviceContext->DSSetShader(nullptr, nullptr, 0);
+		_pDeviceContext->PSSetShader(nullptr, nullptr, 0);
 	}
 }
 
 void Dx11_Tessellation::Release()
 {
+	if (m_pVertexBuffer)
+	{
+		m_pVertexBuffer->Release();
+		m_pVertexBuffer = nullptr;
+	}
+
+	if (m_pIndexBuffer)
+	{
+		m_pIndexBuffer->Release();
+		m_pIndexBuffer = nullptr;
+	}
+
 	if (m_pTessellationBuffer)
 	{
 		m_pTessellationBuffer->Release();
