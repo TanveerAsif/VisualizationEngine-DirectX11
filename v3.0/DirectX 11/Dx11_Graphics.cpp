@@ -68,6 +68,7 @@ bool Dx11_Graphics::Initialize(HWND hWnd, UINT _width, UINT _height)
 			MessageBox(hWnd, L"FAILED TO INITIALIZE ASSIMP : ", L"error", MB_ICONEXCLAMATION | MB_OK);
 			return bRetValue;
 		}*/
+
 		m_pTessellation = new Dx11_Tessellation();
 		bRetValue = m_pTessellation->Init(pDevice, pDeviceContext);
 		if (!bRetValue)
@@ -154,10 +155,11 @@ void Dx11_Graphics::RenderScene(float _fTick)
 		if (m_pTessellation)
 		{
 			m_pDirect3D->SetRasterWireframe();
-
+			D3DXMatrixRotationX(&matRotY, -1 * D3DX_PI * 90 / 180);
 			worldMat = m_pDirect3D->GetWorldMatrix();
-			m_pTessellation->Render(pDeviceContext, 0, worldMat, viewMat, projectionMat);
+			//worldMat = matRotY * worldMat;
 
+			m_pTessellation->Render(pDeviceContext, _fTick, worldMat, viewMat, projectionMat);
 			m_pDirect3D->SetRasterSolid();
 		}
 			

@@ -100,6 +100,12 @@ cbuffer MatrixBuffer: register(b1)
 };
 
 
+cbuffer TickBuffer: register(b2)
+{
+	float fTick;
+	float3 fPadding;
+};
+
 [domain("tri")]
 PixelInput MyDomainShader(PatchOutput input, float3 uvwCoord : SV_DomainLocation, const OutputPatch<HullInput, 3> patch)
 {
@@ -108,6 +114,13 @@ PixelInput MyDomainShader(PatchOutput input, float3 uvwCoord : SV_DomainLocation
 	//Determine new position of vertex
 	float3 vertexNewPos =  uvwCoord.x * patch[0].Position + uvwCoord.y * patch[1].Position + uvwCoord.z * patch[2].Position;
 	
+	//position.x += a * sin(k * position.y + f * time);	
+	//y = a * sin(k - w * time);
+	
+	/*float a = 10.0f, k = 2.0f, w = 10.0;
+	float yChange = a * sin(k - w * fTick);
+	if(yChange > 0)
+		vertexNewPos.z += yChange  ;*/
 	
 	output.position = float4(vertexNewPos, 1.0f);
 	output.position = mul(output.position, worldMat);

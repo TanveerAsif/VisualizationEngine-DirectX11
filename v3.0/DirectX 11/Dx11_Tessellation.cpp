@@ -120,7 +120,17 @@ bool Dx11_Tessellation::IntializeShader(ID3D11Device * _pDevice)
 	if (hr != S_OK)
 		return false;
 		
-	
+	D3D11_BUFFER_DESC TickbuffDesc;
+	ZeroMemory(&TickbuffDesc, sizeof(TickbuffDesc));
+	TickbuffDesc.Usage = D3D11_USAGE_DYNAMIC;
+	TickbuffDesc.ByteWidth = sizeof(stTessellationBuffer);
+	TickbuffDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	TickbuffDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	hr = _pDevice->CreateBuffer(&TickbuffDesc, nullptr, &m_pTickBuffer);
+	if (hr != S_OK)
+		return false;
+
+
 	return true;
 }
 
@@ -172,6 +182,60 @@ bool Dx11_Tessellation::IntializeGeometry(ID3D11Device * _pDevice)
 	return true;
 }
 
+bool Dx11_Tessellation::IntializeTerrain(ID3D11Device * _pDevice)
+{
+	int nVertexCount = 4;
+	stVertex *pVertex = new stVertex[nVertexCount];
+	pVertex[0].Pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	pVertex[0].Color = D3DXVECTOR4(1.0f, 0.0f, 0.0f, 1.0f);
+
+	pVertex[1].Pos = D3DXVECTOR3(1.0f, 0.0f, 0.0f);
+	pVertex[1].Color = D3DXVECTOR4(1.0f, 0.0f, 0.0f, 1.0f);
+
+	pVertex[2].Pos = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+	pVertex[2].Color = D3DXVECTOR4(1.0f, 0.0f, 0.0f, 1.0f);
+
+	pVertex[3].Pos = D3DXVECTOR3(1.0f, 1.0f, 0.0f);
+	pVertex[3].Color = D3DXVECTOR4(1.0f, 0.0f, 0.0f, 1.0f);
+
+	D3D11_BUFFER_DESC vertexBuffDesc;
+	ZeroMemory(&vertexBuffDesc, sizeof(vertexBuffDesc));
+	vertexBuffDesc.Usage = D3D11_USAGE_DEFAULT;
+	vertexBuffDesc.ByteWidth = sizeof(stVertex) * nVertexCount;
+	vertexBuffDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	D3D11_SUBRESOURCE_DATA vertexBuffRes;
+	ZeroMemory(&vertexBuffRes, sizeof(vertexBuffRes));
+	vertexBuffRes.pSysMem = pVertex;
+	HRESULT hr = _pDevice->CreateBuffer(&vertexBuffDesc, &vertexBuffRes, &m_pVertexBuffer);
+	if (hr != S_OK)
+		return false;
+
+	m_uiIndexCount = 6;
+	unsigned int *pIndex = new unsigned int[m_uiIndexCount];
+	pIndex[0] = 0;
+	pIndex[1] = 1;
+	pIndex[2] = 3;
+	pIndex[3] = 3;
+	pIndex[4] = 2;
+	pIndex[5] = 0;
+	D3D11_BUFFER_DESC indexBuffDesc;
+	ZeroMemory(&indexBuffDesc, sizeof(indexBuffDesc));
+	indexBuffDesc.Usage = D3D11_USAGE_DEFAULT;
+	indexBuffDesc.ByteWidth = sizeof(unsigned int) * m_uiIndexCount;
+	indexBuffDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	D3D11_SUBRESOURCE_DATA indexBuffRes;
+	ZeroMemory(&indexBuffRes, sizeof(indexBuffRes));
+	indexBuffRes.pSysMem = pIndex;
+	hr = _pDevice->CreateBuffer(&indexBuffDesc, &indexBuffRes, &m_pIndexBuffer);
+	if (hr != S_OK)
+		return false;
+
+	delete pVertex;
+	delete pIndex;
+
+	return true;
+}
+
 Dx11_Tessellation::Dx11_Tessellation()
 {
 }
@@ -186,14 +250,18 @@ bool Dx11_Tessellation::Init(ID3D11Device * _pDevice, ID3D11DeviceContext * _pDe
 	//Init Shader
 	if (IntializeShader(_pDevice))
 	{
-		//Init Geomtery
-		if (IntializeGeometry(_pDevice))
-			return true;		
+		////Init Geomtery
+		//if (IntializeGeometry(_pDevice))
+		//	return true;		
+
+		//Init Terrain
+		if (IntializeTerrain(_pDevice))
+			return true;
 	}
 	return false;
 }
 
-void Dx11_Tessellation::Render(ID3D11DeviceContext * _pDeviceContext, unsigned int _uIndexCount, D3DXMATRIX _worldMat, D3DXMATRIX _viewMat, D3DXMATRIX _projMat)
+void Dx11_Tessellation::Render(ID3D11DeviceContext * _pDeviceContext, float _fTick, D3DXMATRIX _worldMat, D3DXMATRIX _viewMat, D3DXMATRIX _projMat)
 {
 	if (_pDeviceContext)
 	{
@@ -234,6 +302,16 @@ void Dx11_Tessellation::Render(ID3D11DeviceContext * _pDeviceContext, unsigned i
 		pData->projMat = _projMat;
 		_pDeviceContext->Unmap(m_pWVPBuffer, 0);
 		_pDeviceContext->DSSetConstantBuffers(1, 1, &m_pWVPBuffer);
+
+		D3D11_MAPPED_SUBRESOURCE mappedTickResource;
+		hr = _pDeviceContext->Map(m_pTickBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedTickResource);
+		if (hr != S_OK)
+			return;
+		stTickBuffer *pTickData = (stTickBuffer *)mappedTickResource.pData;
+		pTickData->fTick = _fTick;
+		pTickData->vPadding = D3DXVECTOR3(0.0f, 0.0f, 0.0f);		
+		_pDeviceContext->Unmap(m_pTickBuffer, 0);
+		_pDeviceContext->DSSetConstantBuffers(2, 1, &m_pTickBuffer);
 		//////////////////////////////////////////////////////////////////////
 
 		_pDeviceContext->VSSetShader(m_pVS, nullptr, 0);
