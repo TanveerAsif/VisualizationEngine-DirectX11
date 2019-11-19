@@ -224,3 +224,10 @@ void Dx11_Graphics::EnableShadowMap()
 {
 	m_bShowMapEnable = (m_bShowMapEnable == false) ? true : false;
 }
+
+void Dx11_Graphics::SetTessellationFactor(int _iFactor)
+{
+	if (m_pTessellation)
+		m_pTessellation->UpdateTessellationFactor(_iFactor);
+}
+

@@ -57,5 +57,7 @@ public:
 	void					CameraTransform(D3DXVECTOR2 _vScreenPoint);
 	void					SetCameraLastDragPoint(D3DXVECTOR2 _vPoint);
 	void					EnableShadowMap();
+	void					SetTessellationFactor(int _iFactor);
+	
 };
 

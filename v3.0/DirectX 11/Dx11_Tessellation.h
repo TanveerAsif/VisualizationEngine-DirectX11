@@ -43,6 +43,8 @@ private:
 
 	unsigned int         m_uiIndexCount = 0;
 	ID3D11Buffer		*m_pVertexBuffer = nullptr, *m_pIndexBuffer = nullptr;
+
+	unsigned int		m_uiTessValue = 10;
 	bool IntializeShader(ID3D11Device * _pDevice);
 	bool IntializeGeometry(ID3D11Device * _pDevice);
 	bool IntializeTerrain(ID3D11Device * _pDevice);
@@ -54,6 +56,7 @@ public:
 	bool Init(ID3D11Device *_pDevice, ID3D11DeviceContext *_pDeviceContext);
 	void Render(ID3D11DeviceContext *_pDeviceContext, float _fTick ,D3DXMATRIX _worldMat, D3DXMATRIX _viewMat, D3DXMATRIX _projMat);
 	void Release();
+	void UpdateTessellationFactor(int _iDelta);
 };
 
 

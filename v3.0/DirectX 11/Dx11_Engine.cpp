@@ -92,7 +92,13 @@ void Dx11_Engine::Run()
 		if (m_pInput->IsKeyDown('T'))
 		{
 			m_pInput->KeyUp('T');
-			m_pGraphics->UpdateCamera('T');
+			m_pGraphics->SetTessellationFactor(1);
+		}
+
+		if (m_pInput->IsKeyDown('Y'))
+		{
+			m_pInput->KeyUp('Y');
+			m_pGraphics->SetTessellationFactor(-1);
 		}
 
 		if (m_pInput->IsKeyDown('M'))

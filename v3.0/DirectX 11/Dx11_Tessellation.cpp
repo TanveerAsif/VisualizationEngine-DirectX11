@@ -281,7 +281,7 @@ void Dx11_Tessellation::Render(ID3D11DeviceContext * _pDeviceContext, float _fTi
 		if (hr != S_OK)
 			return;
 		stTessellationBuffer *pTessData = (stTessellationBuffer *)mappedTessRes.pData;
-		pTessData->fTessellationAmount = 10.0f;
+		pTessData->fTessellationAmount = (float)m_uiTessValue;//10.0f
 		for (int i = 0; i < 3; i++)
 			pTessData->fPadding[i] = 0.0f;
 		_pDeviceContext->Unmap(m_pTessellationBuffer, 0);
@@ -386,4 +386,11 @@ void Dx11_Tessellation::Release()
 		m_pVS->Release();
 		m_pVS = nullptr;
 	}
+}
+
+void Dx11_Tessellation::UpdateTessellationFactor(int _iDelta)
+{
+	m_uiTessValue += _iDelta;
+	if (m_uiTessValue <= 1)
+		m_uiTessValue = 1;
 }
