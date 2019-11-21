@@ -36,7 +36,9 @@ HullInput MyVertexShader(VertexInput input)
 cbuffer TessellationFactor : register(b0)
 {
 	float fTessAmount;
-	float3 padding;
+	//float3 padding;
+	float fCamDistance;
+	float2 padding;
 };
 
 
@@ -51,11 +53,15 @@ PatchOutput PatchConstantFunction(InputPatch<HullInput, 3> inputPatch, uint patc
 {
 	PatchOutput output;
 	
-	output.edge[0] = fTessAmount;
-	output.edge[1] = fTessAmount;
-	output.edge[2] = fTessAmount;
+	float fMinDistance = 0; 
+	float fMaxDistance = 10; 
+	float s = saturate((fMaxDistance - fCamDistance) / (fMaxDistance - fMinDistance));
+	float fTessValue = pow(2, lerp(fMinDistance, fMaxDistance, s));
+	output.edge[0] = fTessValue;//fTessAmount;
+	output.edge[1] = fTessValue;//fTessAmount;
+	output.edge[2] = fTessValue;//fTessAmount;
 	
-	output.inside = fTessAmount;
+	output.inside = fTessValue;//fTessAmount;
 	
 	return output;
 };

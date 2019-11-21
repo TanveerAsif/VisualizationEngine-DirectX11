@@ -261,7 +261,7 @@ bool Dx11_Tessellation::Init(ID3D11Device * _pDevice, ID3D11DeviceContext * _pDe
 	return false;
 }
 
-void Dx11_Tessellation::Render(ID3D11DeviceContext * _pDeviceContext, float _fTick, D3DXMATRIX _worldMat, D3DXMATRIX _viewMat, D3DXMATRIX _projMat)
+void Dx11_Tessellation::Render(ID3D11DeviceContext * _pDeviceContext, float _fTick, D3DXMATRIX _worldMat, D3DXMATRIX _viewMat, D3DXMATRIX _projMat, float _fCameraDistance)
 {
 	if (_pDeviceContext)
 	{
@@ -274,7 +274,7 @@ void Dx11_Tessellation::Render(ID3D11DeviceContext * _pDeviceContext, float _fTi
 		_pDeviceContext->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 		_pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
 
-
+				
 		//Set Buffer To Hull Shader
 		D3D11_MAPPED_SUBRESOURCE mappedTessRes;
 		HRESULT hr = _pDeviceContext->Map(m_pTessellationBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedTessRes);
@@ -282,7 +282,8 @@ void Dx11_Tessellation::Render(ID3D11DeviceContext * _pDeviceContext, float _fTi
 			return;
 		stTessellationBuffer *pTessData = (stTessellationBuffer *)mappedTessRes.pData;
 		pTessData->fTessellationAmount = (float)m_uiTessValue;//10.0f
-		for (int i = 0; i < 3; i++)
+		pTessData->fCameraDistance = _fCameraDistance;
+		for (int i = 0; i < 2; i++)
 			pTessData->fPadding[i] = 0.0f;
 		_pDeviceContext->Unmap(m_pTessellationBuffer, 0);
 		_pDeviceContext->HSSetConstantBuffers(0, 1, &m_pTessellationBuffer);

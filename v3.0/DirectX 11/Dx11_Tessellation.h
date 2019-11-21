@@ -24,7 +24,8 @@ private:
 	struct stTessellationBuffer
 	{
 		float fTessellationAmount;
-		float fPadding[3];
+		float fCameraDistance;
+		float fPadding[2];
 	};
 
 	struct stTickBuffer 
@@ -54,7 +55,7 @@ public:
 	~Dx11_Tessellation();
 
 	bool Init(ID3D11Device *_pDevice, ID3D11DeviceContext *_pDeviceContext);
-	void Render(ID3D11DeviceContext *_pDeviceContext, float _fTick ,D3DXMATRIX _worldMat, D3DXMATRIX _viewMat, D3DXMATRIX _projMat);
+	void Render(ID3D11DeviceContext *_pDeviceContext, float _fTick ,D3DXMATRIX _worldMat, D3DXMATRIX _viewMat, D3DXMATRIX _projMat, float _fCameraDistance);
 	void Release();
 	void UpdateTessellationFactor(int _iDelta);
 };
