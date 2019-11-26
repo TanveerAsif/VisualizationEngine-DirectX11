@@ -184,7 +184,7 @@ bool Dx11_Tessellation::IntializeGeometry(ID3D11Device * _pDevice)
 
 bool Dx11_Tessellation::IntializeTerrain(ID3D11Device * _pDevice)
 {
-	int nVertexCount = 4;
+	int nVertexCount = 8;
 	stVertex *pVertex = new stVertex[nVertexCount];
 	pVertex[0].Pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	pVertex[0].Color = D3DXVECTOR4(1.0f, 0.0f, 0.0f, 1.0f);
@@ -198,6 +198,18 @@ bool Dx11_Tessellation::IntializeTerrain(ID3D11Device * _pDevice)
 	pVertex[3].Pos = D3DXVECTOR3(1.0f, 1.0f, 0.0f);
 	pVertex[3].Color = D3DXVECTOR4(1.0f, 0.0f, 0.0f, 1.0f);
 
+	pVertex[4].Pos = D3DXVECTOR3(1.0f, 0.0f, 0.0f);
+	pVertex[4].Color = D3DXVECTOR4(1.0f, 0.0f, 0.0f, 1.0f);
+
+	pVertex[5].Pos = D3DXVECTOR3(2.0f, 0.0f, 0.0f);
+	pVertex[5].Color = D3DXVECTOR4(1.0f, 0.0f, 0.0f, 1.0f);
+
+	pVertex[6].Pos = D3DXVECTOR3(1.0f, 1.0f, 0.0f);
+	pVertex[6].Color = D3DXVECTOR4(1.0f, 0.0f, 0.0f, 1.0f);
+
+	pVertex[7].Pos = D3DXVECTOR3(2.0f, 1.0f, 0.0f);
+	pVertex[7].Color = D3DXVECTOR4(1.0f, 0.0f, 0.0f, 1.0f);
+
 	D3D11_BUFFER_DESC vertexBuffDesc;
 	ZeroMemory(&vertexBuffDesc, sizeof(vertexBuffDesc));
 	vertexBuffDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -210,7 +222,7 @@ bool Dx11_Tessellation::IntializeTerrain(ID3D11Device * _pDevice)
 	if (hr != S_OK)
 		return false;
 
-	m_uiIndexCount = 6;
+	m_uiIndexCount = 6*2;
 	unsigned int *pIndex = new unsigned int[m_uiIndexCount];
 	pIndex[0] = 0;
 	pIndex[1] = 1;
@@ -218,6 +230,13 @@ bool Dx11_Tessellation::IntializeTerrain(ID3D11Device * _pDevice)
 	pIndex[3] = 3;
 	pIndex[4] = 2;
 	pIndex[5] = 0;
+	pIndex[6] = 4;
+	pIndex[7] = 5;
+	pIndex[8] = 7;
+	pIndex[9] = 7;
+	pIndex[10] = 6;
+	pIndex[11] = 4;
+
 	D3D11_BUFFER_DESC indexBuffDesc;
 	ZeroMemory(&indexBuffDesc, sizeof(indexBuffDesc));
 	indexBuffDesc.Usage = D3D11_USAGE_DEFAULT;
