@@ -1,9 +1,16 @@
 
 
+/////struct VertexInput
+/////{
+/////	float3 Pos : POSITION;
+/////	float4 Color : COLOR;
+/////};
+
 struct VertexInput
 {
 	float3 Pos : POSITION;
-	float4 Color : COLOR;
+	float2 tex  : TEXCOORD0;
+	float3 Color : NORMAL;
 };
 
 
@@ -13,16 +20,38 @@ struct HullInput
 	float4 Color : COLOR;
 };
 
+struct PixelInput
+{
+	float4 position : SV_POSITION;
+	float2 tex  : TEXCOORD0;
+	float3 color : NORMAL;
+};
+
+cbuffer MatrixBuffer: register(b1)
+{
+	matrix worldMat;
+	matrix viewMat;
+	matrix projMat;
+};
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////       VS : Vertex Shader                //////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
-HullInput MyVertexShader(VertexInput input)
+PixelInput MyVertexShader(VertexInput input)
 {
-    HullInput output;
+    PixelInput output;
     
-	output.Position = input.Pos;	
-	output.Color = input.Color;
+	//output.Position = input.Pos;	
+	//output.Color = input.Color;
+	
+	output.position = float4(input.Pos, 1.0f);
+	output.position = mul(output.position, worldMat);
+	output.position = mul(output.position, viewMat);
+	output.position = mul(output.position, projMat);
+	
+	
+	output.color = input.Color;
+	output.tex = input.tex;
     
     return output;
 };
@@ -53,15 +82,15 @@ PatchOutput PatchConstantFunction(InputPatch<HullInput, 3> inputPatch, uint patc
 {
 	PatchOutput output;
 	
-	float fMinDistance = 0; 
-	float fMaxDistance = 10; 
-	float s = saturate((fMaxDistance - fCamDistance) / (fMaxDistance - fMinDistance));
-	float fTessValue = pow(2, lerp(fMinDistance, fMaxDistance, s));
-	output.edge[0] = fTessValue;//fTessAmount;
-	output.edge[1] = fTessValue;//fTessAmount;
-	output.edge[2] = fTessValue;//fTessAmount;
+	//float fMinDistance = 0; 
+	//float fMaxDistance = 10; 
+	//float s = saturate((fMaxDistance - fCamDistance) / (fMaxDistance - fMinDistance));
+	//float fTessValue = pow(2, lerp(fMinDistance, fMaxDistance, s));
+	output.edge[0] = fTessAmount;//fTessValue;
+	output.edge[1] = fTessAmount;//fTessValue;
+	output.edge[2] = fTessAmount;//fTessValue;
 	
-	output.inside = fTessValue;//fTessAmount;
+	output.inside = fTessAmount;//fTessValue;
 	
 	return output;
 };
@@ -92,18 +121,18 @@ DomainInput MyHullShader(InputPatch<HullInput, 3> inputPatch, uint pointId : SV_
 ////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////       DS : Domain Shader               //////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
-struct PixelInput
-{
-	float4 position : SV_POSITION;
-	float4 color : COLOR;
-};
+//struct PixelInput
+//{
+//	float4 position : SV_POSITION;
+//	float4 color : COLOR;
+//};
 
-cbuffer MatrixBuffer: register(b1)
-{
-	matrix worldMat;
-	matrix viewMat;
-	matrix projMat;
-};
+///////cbuffer MatrixBuffer: register(b1)
+///////{
+///////	matrix worldMat;
+///////	matrix viewMat;
+///////	matrix projMat;
+///////};
 
 
 cbuffer TickBuffer: register(b2)
@@ -146,5 +175,5 @@ PixelInput MyDomainShader(PatchOutput input, float3 uvwCoord : SV_DomainLocation
 ////////////////////////////////////////////////////////////////////////////////////////////
 float4 MyPixelShader(PixelInput input) : SV_TARGET
 {
-	return input.color;
+	return float4(input.color, 1.0);
 };

@@ -153,16 +153,14 @@ void Dx11_Graphics::RenderScene(float _fTick)
 		}
 
 		if (m_pTessellation)
-		{
-			m_pDirect3D->SetRasterWireframe();
+		{			
 			D3DXMatrixRotationX(&matRotY, -1 * D3DX_PI * 90 / 180);
 			worldMat = m_pDirect3D->GetWorldMatrix();
 			//worldMat = matRotY * worldMat;
 
 			D3DXVECTOR3 vCamDis = m_pCamera->GetPosition() - D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 			float fCamDistance = D3DXVec3Length(&vCamDis);
-			m_pTessellation->Render(pDeviceContext, _fTick, worldMat, viewMat, projectionMat, fCamDistance);
-			m_pDirect3D->SetRasterSolid();
+			m_pTessellation->Render(pDeviceContext, _fTick, worldMat, viewMat, projectionMat, fCamDistance);			
 		}
 			
 

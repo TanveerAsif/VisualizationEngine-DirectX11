@@ -20,7 +20,7 @@ private:
 	bool			m_bLButtonDown = false;
 
 	bool InitializeWindow();
-
+	bool UpdateKeyPress();
 public:
 	Dx11_Engine();
 	~Dx11_Engine();

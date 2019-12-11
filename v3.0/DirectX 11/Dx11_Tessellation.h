@@ -4,6 +4,7 @@
 #include <D3DX11async.h>
 
 
+class Dx11_Terrain;
 class Dx11_Tessellation
 {
 
@@ -48,7 +49,9 @@ private:
 	unsigned int		m_uiTessValue = 10;
 	bool IntializeShader(ID3D11Device * _pDevice);
 	bool IntializeGeometry(ID3D11Device * _pDevice);
-	bool IntializeTerrain(ID3D11Device * _pDevice);
+	bool IntializeQuad(ID3D11Device * _pDevice);
+
+	Dx11_Terrain		*m_pTerrain = nullptr;
 
 public:
 	Dx11_Tessellation();
