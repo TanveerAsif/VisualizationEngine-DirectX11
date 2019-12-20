@@ -318,6 +318,7 @@
     <ClCompile Include="Dx11_Graphics.cpp" />
     <ClCompile Include="Dx11_Input.cpp" />
     <ClCompile Include="Dx11_Model.cpp" />
+    <ClCompile Include="Dx11_QuadTree.cpp" />
     <ClCompile Include="Dx11_Render2Texture.cpp" />
     <ClCompile Include="Dx11_Shaders.cpp" />
     <ClCompile Include="Dx11_Terrain.cpp" />
@@ -339,6 +340,7 @@
     <ClInclude Include="Dx11_Graphics.h" />
     <ClInclude Include="Dx11_Input.h" />
     <ClInclude Include="Dx11_Model.h" />
+    <ClInclude Include="Dx11_QuadTree.h" />
     <ClInclude Include="Dx11_Render2Texture.h" />
     <ClInclude Include="Dx11_Shaders.h" />
     <ClInclude Include="Dx11_Terrain.h" />

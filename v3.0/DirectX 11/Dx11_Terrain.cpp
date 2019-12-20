@@ -67,6 +67,7 @@ bool Dx11_Terrain::Init(ID3D11Device * _pDevice)
 		}
 	}
 	
+	/*
 	if (index == m_iVertexCount)
 	{
 		float centerX = 0, centerZ = 0;
@@ -89,8 +90,7 @@ bool Dx11_Terrain::Init(ID3D11Device * _pDevice)
 		char msgbuf[1000];
 		sprintf_s(msgbuf, "\Center (%f, %f, %f)", centerX/ m_iVertexCount, 0, centerZ / m_iVertexCount);
 		OutputDebugStringA(msgbuf);
-
-	}
+	}*/
 	
 	return true;
 }
@@ -99,4 +99,9 @@ void Dx11_Terrain::CopyVertices(void * _pVertexBuffer)
 {	
 	if(_pVertexBuffer != nullptr)
 		memcpy(_pVertexBuffer, m_pVertexList, sizeof(stVertex)*m_iVertexCount);
+}
+
+void Dx11_Terrain::Release()
+{
+	delete m_pVertexList;
 }

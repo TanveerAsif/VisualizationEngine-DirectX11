@@ -5,6 +5,7 @@
 
 
 class Dx11_Terrain;
+class Dx11_QuadTree;
 class Dx11_Tessellation
 {
 
@@ -52,6 +53,7 @@ private:
 	bool IntializeQuad(ID3D11Device * _pDevice);
 
 	Dx11_Terrain		*m_pTerrain = nullptr;
+	Dx11_QuadTree		*m_pQuadTree = nullptr;
 
 public:
 	Dx11_Tessellation();

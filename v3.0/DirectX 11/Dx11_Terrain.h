@@ -26,5 +26,6 @@ public:
 	bool			Init(ID3D11Device *_pDevice);
 	unsigned int	GetVertexCount() { return m_iVertexCount; }
 	void			CopyVertices(void *pVertexBuffer);
+	void			Release();
 };
 

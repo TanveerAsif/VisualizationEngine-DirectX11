@@ -99,6 +99,7 @@ void Dx11_Graphics::Render(float _fTick)
 
 void Dx11_Graphics::Shutdown()
 {
+
 	if (m_pTessellation)
 	{
 		m_pTessellation->Release();

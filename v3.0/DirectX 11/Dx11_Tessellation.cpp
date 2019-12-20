@@ -3,6 +3,7 @@
 #include <fstream>
 
 #include "Dx11_Terrain.h"
+#include "Dx11_QuadTree.h"
 
 
 bool errorLogger(ID3D10Blob *_pErrorBuffer)
@@ -28,7 +29,7 @@ bool Dx11_Tessellation::IntializeShader(ID3D11Device * _pDevice)
 {
 	ID3D10Blob *pErrorBuffer, *pVSBuffer, *pHSBuffer, *pDSBuffer, *pPSBuffer;
 	//Compile Vertex Shader
-	HRESULT hr = D3DX11CompileFromFile(L"../../Data/TerrainShader.hlsl", nullptr, nullptr, "MyVertexShader", "vs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, nullptr,
+	HRESULT hr = D3DX11CompileFromFile(L"../../Data/TessellationShader.hlsl", nullptr, nullptr, "MyVertexShader", "vs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, nullptr,
 		&pVSBuffer, &pErrorBuffer, nullptr);
 	if (hr != S_OK)
 	{
@@ -37,27 +38,27 @@ bool Dx11_Tessellation::IntializeShader(ID3D11Device * _pDevice)
 	}
 		
 
-	//////Compile Hull Shader
-	////hr = D3DX11CompileFromFile(L"../../Data/TessellationShader.hlsl", nullptr, nullptr, "MyHullShader", "hs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, nullptr,
-	////	&pHSBuffer, &pErrorBuffer, nullptr);
-	////if (hr != S_OK)
-	////{
-	////	errorLogger(pErrorBuffer);
-	////	return false;
-	////}
-	////	
+	//Compile Hull Shader
+	hr = D3DX11CompileFromFile(L"../../Data/TessellationShader.hlsl", nullptr, nullptr, "MyHullShader", "hs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, nullptr,
+		&pHSBuffer, &pErrorBuffer, nullptr);
+	if (hr != S_OK)
+	{
+		errorLogger(pErrorBuffer);
+		return false;
+	}
+		
 
-	//////Compile Domain Shader
-	////hr = D3DX11CompileFromFile(L"../../Data/TessellationShader.hlsl", nullptr, nullptr, "MyDomainShader", "ds_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, nullptr,
-	////	&pDSBuffer, &pErrorBuffer, nullptr);
-	////if (hr != S_OK)
-	////{
-	////	errorLogger(pErrorBuffer);
-	////	return false;
-	////}
+	//Compile Domain Shader
+	hr = D3DX11CompileFromFile(L"../../Data/TessellationShader.hlsl", nullptr, nullptr, "MyDomainShader", "ds_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, nullptr,
+		&pDSBuffer, &pErrorBuffer, nullptr);
+	if (hr != S_OK)
+	{
+		errorLogger(pErrorBuffer);
+		return false;
+	}
 
 	//Compile Pixel Shader
-	hr = D3DX11CompileFromFile(L"../../Data/TerrainShader.hlsl", nullptr, nullptr, "MyPixelShader", "ps_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, nullptr,
+	hr = D3DX11CompileFromFile(L"../../Data/TessellationShader.hlsl", nullptr, nullptr, "MyPixelShader", "ps_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, nullptr,
 		&pPSBuffer, &pErrorBuffer, nullptr);
 	if (hr != S_OK)
 	{
@@ -263,8 +264,10 @@ bool Dx11_Tessellation::IntializeQuad(ID3D11Device * _pDevice)
 }
 
 Dx11_Tessellation::Dx11_Tessellation()
+	:m_pTerrain(new Dx11_Terrain()),
+		m_pQuadTree(new Dx11_QuadTree())
 {
-	m_pTerrain = new Dx11_Terrain();
+	
 }
 
 
@@ -287,6 +290,7 @@ bool Dx11_Tessellation::Init(ID3D11Device * _pDevice, ID3D11DeviceContext * _pDe
 		//if (IntializeQuad(_pDevice))
 		//	return true;
 
+		/*
 		if (m_pTerrain->Init(_pDevice))
 		{
 			unsigned int vertexCount = m_pTerrain->GetVertexCount();
@@ -326,11 +330,11 @@ bool Dx11_Tessellation::Init(ID3D11Device * _pDevice, ID3D11DeviceContext * _pDe
 			delete pIndex;
 
 			return true;
-		}
+		}*/
 			
-		
+		return m_pQuadTree->BuildQuadTree(_pDevice, m_pTerrain);
 	}
-	return false;
+	return true;
 }
 
 void Dx11_Tessellation::Render(ID3D11DeviceContext * _pDeviceContext, float _fTick, D3DXMATRIX _worldMat, D3DXMATRIX _viewMat, D3DXMATRIX _projMat, float _fCameraDistance)
@@ -344,8 +348,8 @@ void Dx11_Tessellation::Render(ID3D11DeviceContext * _pDeviceContext, float _fTi
 		UINT offset = 0;
 		_pDeviceContext->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &stride, &offset);
 		_pDeviceContext->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-		//_pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
-		_pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		_pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
+		
 
 				
 		//Set Buffer To Hull Shader
@@ -359,7 +363,7 @@ void Dx11_Tessellation::Render(ID3D11DeviceContext * _pDeviceContext, float _fTi
 		for (int i = 0; i < 2; i++)
 			pTessData->fPadding[i] = 0.0f;
 		_pDeviceContext->Unmap(m_pTessellationBuffer, 0);
-		//_pDeviceContext->HSSetConstantBuffers(0, 1, &m_pTessellationBuffer);
+		_pDeviceContext->HSSetConstantBuffers(0, 1, &m_pTessellationBuffer);
 		//////////////////////////////////////////////////////////////////////
 
 		//Set Buffer To Domain Shader
@@ -375,8 +379,8 @@ void Dx11_Tessellation::Render(ID3D11DeviceContext * _pDeviceContext, float _fTi
 		pData->viewMat = _viewMat;
 		pData->projMat = _projMat;
 		_pDeviceContext->Unmap(m_pWVPBuffer, 0);
-		//_pDeviceContext->DSSetConstantBuffers(1, 1, &m_pWVPBuffer);
-		_pDeviceContext->VSSetConstantBuffers(0, 1, &m_pWVPBuffer);
+		_pDeviceContext->DSSetConstantBuffers(1, 1, &m_pWVPBuffer);
+		
 
 		D3D11_MAPPED_SUBRESOURCE mappedTickResource;
 		hr = _pDeviceContext->Map(m_pTickBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedTickResource);
@@ -386,12 +390,12 @@ void Dx11_Tessellation::Render(ID3D11DeviceContext * _pDeviceContext, float _fTi
 		pTickData->fTick = _fTick;
 		pTickData->vPadding = D3DXVECTOR3(0.0f, 0.0f, 0.0f);		
 		_pDeviceContext->Unmap(m_pTickBuffer, 0);
-		//_pDeviceContext->DSSetConstantBuffers(2, 1, &m_pTickBuffer);
+		_pDeviceContext->DSSetConstantBuffers(2, 1, &m_pTickBuffer);
 		//////////////////////////////////////////////////////////////////////
 
 		_pDeviceContext->VSSetShader(m_pVS, nullptr, 0);
-		/*_pDeviceContext->HSSetShader(m_pHS, nullptr, 0);
-		_pDeviceContext->DSSetShader(m_pDS, nullptr, 0);*/
+		_pDeviceContext->HSSetShader(m_pHS, nullptr, 0);
+		_pDeviceContext->DSSetShader(m_pDS, nullptr, 0);
 		_pDeviceContext->PSSetShader(m_pPS, nullptr, 0);
 
 		//_uIndexCount : NOT USING HERE : SHOULD BE REMOVE AS PARAMTER
@@ -408,6 +412,21 @@ void Dx11_Tessellation::Render(ID3D11DeviceContext * _pDeviceContext, float _fTi
 
 void Dx11_Tessellation::Release()
 {
+	if (m_pQuadTree)
+	{
+		m_pQuadTree->Release();
+		delete m_pQuadTree;
+		m_pQuadTree = nullptr;
+	}
+
+	if (m_pTerrain)
+	{
+		m_pTerrain->Release();
+		delete m_pTerrain;
+		m_pTerrain = nullptr;
+	}
+
+
 	if (m_pVertexBuffer)
 	{
 		m_pVertexBuffer->Release();

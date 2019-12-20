@@ -9,6 +9,9 @@
 #include "Dx11_Render2Texture.h"
 #include "Dx11_Tessellation.h"
 
+#include "Dx11_Terrain.h"
+#include "Dx11_QuadTree.h"
+
 
 #ifdef VISUALIZATION_EXPORTS
 #define VISUALIZATION_API __declspec(dllexport)
@@ -28,6 +31,8 @@ private:
 	Dx11_Text				*m_pText = NULL;
 	Dx11_Assimp				*m_pAssimp = NULL;	
 	Dx11_Tessellation		*m_pTessellation = nullptr;
+	Dx11_Terrain			*m_pTerrain = nullptr;
+	Dx11_QuadTree			*m_pQuadTree = nullptr;
 
 	UINT					m_nScreenWidth, m_nScreenHeight;
 
