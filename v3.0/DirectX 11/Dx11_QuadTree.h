@@ -12,7 +12,7 @@ class Dx11_QuadTree
 		stNode			*m_pChild[4] = { nullptr , nullptr , nullptr , nullptr };
 	};
 
-	const unsigned int		m_cMAX_TRIANGLES_PER_NODE = 25;
+	const unsigned int		m_cMAX_TRIANGLES_PER_NODE = 100;
 
 protected:
 	Dx11_Terrain::stVertex  *m_pVertexList = nullptr;

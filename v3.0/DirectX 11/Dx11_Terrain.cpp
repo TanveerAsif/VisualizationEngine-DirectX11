@@ -3,8 +3,8 @@
 
 
 Dx11_Terrain::Dx11_Terrain()
-	:m_iWidth(300), 
-	m_iHeight(200)
+	:m_iWidth(15), 
+	m_iHeight(10)
 {
 
 }
@@ -16,14 +16,15 @@ Dx11_Terrain::~Dx11_Terrain()
 
 bool Dx11_Terrain::Init(ID3D11Device * _pDevice)
 {
-	m_iVertexCount = 6 * (m_iWidth - 1) * (m_iHeight - 1) ;
-	//m_iVertexCount = m_iWidth * m_iHeight;
+	unsigned int uiTriangles = 0;
+
+	m_iVertexCount = 6 * (m_iWidth /*- 1*/) * (m_iHeight /*- 1*/) ;	
 	m_pVertexList = new stVertex[m_iVertexCount];
 
 	unsigned int index = 0;
-	for (int iCol = 0; iCol < m_iHeight - 1; iCol++)
+	for (int iCol = 0; iCol <= m_iHeight - 1; iCol++)
 	{
-		for (int iRow = 0; iRow < m_iWidth - 1; iRow++)
+		for (int iRow = 0; iRow <= m_iWidth - 1; iRow++)
 		{
 			/*unsigned int v1 = (iCol * (m_iWidth - 1))  + iRow;
 			unsigned int v2 = (iCol * (m_iWidth - 1)) + iRow + 1;
@@ -64,6 +65,8 @@ bool Dx11_Terrain::Init(ID3D11Device * _pDevice)
 			m_pVertexList[index].vTex = D3DXVECTOR2(0.0f, 0.0f);
 			m_pVertexList[index].vNormal = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
 			index++;
+
+			uiTriangles += 2;
 		}
 	}
 	
@@ -92,7 +95,7 @@ bool Dx11_Terrain::Init(ID3D11Device * _pDevice)
 		OutputDebugStringA(msgbuf);
 	}*/
 	
-	return true;
+ 	return true;
 }
 
 void Dx11_Terrain::CopyVertices(void * _pVertexBuffer)

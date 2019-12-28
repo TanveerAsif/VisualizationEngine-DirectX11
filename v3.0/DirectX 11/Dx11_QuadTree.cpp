@@ -32,8 +32,8 @@ void Dx11_QuadTree::CalculateMeshDimension(unsigned int _uiVertexCount, float & 
 		if (d > maxDepth) maxDepth = d;
 	}
 		
-	float maxX = max(fabs(minWidth), fabs(maxWidth));
-	float maxZ = max(fabs(minDepth), fabs(maxDepth));
+	float maxX = (float)max(fabs(minWidth), fabs(maxWidth));
+	float maxZ = (float)max(fabs(minDepth), fabs(maxDepth));
 
 	//Max Diameter of Mesh
 	_fWidth = max(maxX, maxZ) * 2.0;
@@ -53,6 +53,8 @@ void Dx11_QuadTree::CreateTreeNode(ID3D11Device * _pDevice, stNode *_pNode, floa
 
 	//Count Triangles in Width By CenterX and CenterZ
 	unsigned int uiTriangles = CountTriangle(_fCenterX, _fCenterZ, _fWidth);
+	if (uiTriangles == 0)
+		return;
 	
 	if (uiTriangles < m_cMAX_TRIANGLES_PER_NODE)
 	{
@@ -113,10 +115,12 @@ void Dx11_QuadTree::CreateTreeNode(ID3D11Device * _pDevice, stNode *_pNode, floa
 		//Create Four Child
 		for (int iChildIndex = 0; iChildIndex < 4; iChildIndex++)
 		{
-			float fOffsetX = ((iChildIndex % 2 == 0) ? -1 : 1) *_fWidth / 2;
-			float fOffsetZ = ((iChildIndex % 4 < 2) ? -1 : 1 ) *_fWidth / 2;
+			float fOffsetX = ((iChildIndex % 2 == 0) ? -1 : 1) *_fWidth / 4;
+			float fOffsetZ = ((iChildIndex % 4 < 2) ? -1 : 1 ) *_fWidth / 4;
 
-			CreateTreeNode(_pDevice, _pNode->m_pChild[iChildIndex], _fCenterX + fOffsetX, _fCenterZ + fOffsetZ, _fWidth / 2.0);
+			unsigned int iTriangles = CountTriangle((_fCenterX + fOffsetX), (_fCenterZ + fOffsetZ), (_fWidth / 2.0));
+			if (iTriangles > 0)
+				CreateTreeNode(_pDevice, _pNode->m_pChild[iChildIndex], _fCenterX + fOffsetX, _fCenterZ + fOffsetZ, _fWidth / 2.0);
 		}
 		int ok = 1;
 	}
@@ -140,7 +144,7 @@ bool Dx11_QuadTree::IsTriangleContained(unsigned int _uiVertexIndex, float _fCen
 
 
 	float fRadius = (_fWidth / 2);
-	if ((minX >= _fCenterX - fRadius) && (minZ >= _fCenterZ - fRadius) && (maxZ <= _fCenterZ + fRadius) && (maxZ <= _fCenterZ + fRadius))
+	if ((minX > _fCenterX - fRadius) && (minZ > _fCenterZ - fRadius) && (maxX < _fCenterX + fRadius) && (maxZ < _fCenterZ + fRadius))
 		return true;
 
 	return false;
@@ -183,8 +187,6 @@ bool Dx11_QuadTree::BuildQuadTree(ID3D11Device	*_pDevice, Dx11_Terrain	*_pTerrai
 
 	float centerX = 0.0f, centerZ = 0.0f, width = 0.0f;
 	CalculateMeshDimension(m_uiVertexCount, centerX, centerZ, width);
-
-	//m_pRootNode = new stNode();
 	CreateTreeNode(_pDevice, m_pRootNode, centerX, centerZ, width);
 
 	return true;
