@@ -7,6 +7,64 @@ bool Dx11_QuadTree::AddQuadNode(float _fCenterX, float _fCenterZ, float _fWidth)
 	return false;
 }
 
+void Dx11_QuadTree::ReleaseQuadNode(stNode * _pNode)
+{
+	for (int i = 0; i < 4; i++)
+	{
+		if (_pNode->m_pChild[i] != nullptr)
+			ReleaseQuadNode(_pNode->m_pChild[i]);
+	}
+
+	if (_pNode->m_pVB)
+	{
+		_pNode->m_pVB->Release();
+		_pNode->m_pVB = nullptr;
+	}
+
+	if (_pNode->m_pIB)
+	{
+		_pNode->m_pIB->Release();
+		_pNode->m_pIB = nullptr;
+	}
+
+	for (int i = 0; i < 4; i++)
+	{
+		if (_pNode->m_pChild[i])
+		{
+			delete _pNode->m_pChild[i];
+			_pNode->m_pChild[i] = nullptr;
+		}
+	}
+}
+
+void Dx11_QuadTree::RenderQuadNode(ID3D11DeviceContext* _pDeviceContext, stNode* _pNode)
+{
+	unsigned int unChildCount = 0; //Child Count of Node _pNode
+	for (int i = 0; i < 4; i++)
+	{
+		if (_pNode->m_pChild[i])
+		{
+			unChildCount++;
+			RenderQuadNode(_pDeviceContext, _pNode->m_pChild[i]);
+		}
+	}
+
+	if (unChildCount > 0)
+		return; 
+
+	//Render Node
+	//_pDeviceContext->IASetInputLayout(m_p);
+	//SetVertex Buffer
+	UINT stride = sizeof(Dx11_Terrain::stVertex);
+	UINT offset = 0;
+	_pDeviceContext->IASetVertexBuffers(0, 1, &_pNode->m_pVB, &stride, &offset);
+	_pDeviceContext->IASetIndexBuffer(_pNode->m_pIB, DXGI_FORMAT_R32_UINT, 0);
+	_pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	//See declaration of iVertexCount
+	_pDeviceContext->DrawIndexed(_pNode->iVertexCount, 0, 0);
+}
+
 void Dx11_QuadTree::CalculateMeshDimension(unsigned int _uiVertexCount, float & _fCenterX, float & _fCenterZ, float & _fWidth)
 {	
 	for (unsigned int  i = 0; i < _uiVertexCount; i++)
@@ -41,15 +99,15 @@ void Dx11_QuadTree::CalculateMeshDimension(unsigned int _uiVertexCount, float & 
 	return;
 }
 
-void Dx11_QuadTree::CreateTreeNode(ID3D11Device * _pDevice, stNode *_pNode, float _fCenterX, float _fCenterZ, float _fWidth)
+void Dx11_QuadTree::CreateTreeNode(ID3D11Device * _pDevice, stNode **_pNode, float _fCenterX, float _fCenterZ, float _fWidth)
 {
-	_pNode = new stNode();
-	_pNode->iVertexCount = 0;
-	_pNode->fCenterX = _fCenterX;
-	_pNode->fCenterZ = _fCenterZ;
-	_pNode->fWidth = _fWidth;
+	*_pNode = new stNode();
+	(*_pNode)->iVertexCount = 0;
+	(*_pNode)->fCenterX = _fCenterX;
+	(*_pNode)->fCenterZ = _fCenterZ;
+	(*_pNode)->fWidth = _fWidth;
 	for (int iChild = 0; iChild < 4; iChild++)
-		_pNode->m_pChild[iChild] = nullptr;
+		(*_pNode)->m_pChild[iChild] = nullptr;
 
 	//Count Triangles in Width By CenterX and CenterZ
 	unsigned int uiTriangles = CountTriangle(_fCenterX, _fCenterZ, _fWidth);
@@ -58,13 +116,13 @@ void Dx11_QuadTree::CreateTreeNode(ID3D11Device * _pDevice, stNode *_pNode, floa
 	
 	if (uiTriangles < m_cMAX_TRIANGLES_PER_NODE)
 	{
-		_pNode->iVertexCount = uiTriangles * 3;
+		(*_pNode)->iVertexCount = uiTriangles * 3;
 		//Create VB and IB
 		//_pNode->m_pVB, _pNode->m_pIB
 		unsigned int index = 0;
-		Dx11_Terrain::stVertex *pVertices = new Dx11_Terrain::stVertex[_pNode->iVertexCount];
-		unsigned int           *pIndices = new unsigned int[_pNode->iVertexCount];
-		for (unsigned int i = 0; i < _pNode->iVertexCount; i += 3)
+		Dx11_Terrain::stVertex *pVertices = new Dx11_Terrain::stVertex[(*_pNode)->iVertexCount];
+		unsigned int           *pIndices = new unsigned int[(*_pNode)->iVertexCount];
+		for (unsigned int i = 0; i < (*_pNode)->iVertexCount; i += 3)
 		{
 			if (IsTriangleContained(i, _fCenterX, _fCenterZ, _fWidth))
 			{
@@ -86,24 +144,24 @@ void Dx11_QuadTree::CreateTreeNode(ID3D11Device * _pDevice, stNode *_pNode, floa
 		D3D11_BUFFER_DESC vertexBuffDesc;
 		ZeroMemory(&vertexBuffDesc, sizeof(vertexBuffDesc));
 		vertexBuffDesc.Usage = D3D11_USAGE_DEFAULT;
-		vertexBuffDesc.ByteWidth = sizeof(Dx11_Terrain::stVertex) * _pNode->iVertexCount;
+		vertexBuffDesc.ByteWidth = sizeof(Dx11_Terrain::stVertex) * (*_pNode)->iVertexCount;
 		vertexBuffDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 		D3D11_SUBRESOURCE_DATA vertexBuffRes;
 		ZeroMemory(&vertexBuffRes, sizeof(vertexBuffRes));
 		vertexBuffRes.pSysMem = pVertices;
-		HRESULT hr = _pDevice->CreateBuffer(&vertexBuffDesc, &vertexBuffRes, &_pNode->m_pVB);
+		HRESULT hr = _pDevice->CreateBuffer(&vertexBuffDesc, &vertexBuffRes, &(*_pNode)->m_pVB);
 		if (hr != S_OK)
 			return;
 
 		D3D11_BUFFER_DESC indexBuffDesc;
 		ZeroMemory(&indexBuffDesc, sizeof(indexBuffDesc));
 		indexBuffDesc.Usage = D3D11_USAGE_DEFAULT;
-		indexBuffDesc.ByteWidth = sizeof(unsigned int) * _pNode->iVertexCount;
+		indexBuffDesc.ByteWidth = sizeof(unsigned int) * (*_pNode)->iVertexCount;
 		indexBuffDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 		D3D11_SUBRESOURCE_DATA indexBuffRes;
 		ZeroMemory(&indexBuffRes, sizeof(indexBuffRes));
 		indexBuffRes.pSysMem = pIndices;
-		hr = _pDevice->CreateBuffer(&indexBuffDesc, &indexBuffRes, &_pNode->m_pIB);
+		hr = _pDevice->CreateBuffer(&indexBuffDesc, &indexBuffRes, &(*_pNode)->m_pIB);
 		if (hr != S_OK)
 			return;
 
@@ -120,7 +178,7 @@ void Dx11_QuadTree::CreateTreeNode(ID3D11Device * _pDevice, stNode *_pNode, floa
 
 			unsigned int iTriangles = CountTriangle((_fCenterX + fOffsetX), (_fCenterZ + fOffsetZ), (_fWidth / 2.0));
 			if (iTriangles > 0)
-				CreateTreeNode(_pDevice, _pNode->m_pChild[iChildIndex], _fCenterX + fOffsetX, _fCenterZ + fOffsetZ, _fWidth / 2.0);
+				CreateTreeNode(_pDevice, &(*_pNode)->m_pChild[iChildIndex], _fCenterX + fOffsetX, _fCenterZ + fOffsetZ, _fWidth / 2.0);
 		}
 		int ok = 1;
 	}
@@ -135,16 +193,14 @@ bool Dx11_QuadTree::IsTriangleContained(unsigned int _uiVertexIndex, float _fCen
 	float z1 = m_pVertexList[_uiVertexIndex].vPos.z;
 	float z2 = m_pVertexList[_uiVertexIndex + 1].vPos.z;
 	float z3 = m_pVertexList[_uiVertexIndex + 2].vPos.z;
-
-
+	
 	float minX = min(x1, min(x2, x3));
 	float minZ = min(z1, min(z2, z3));
 	float maxX = max(x1, max(x2, x3));
 	float maxZ = max(z1, max(z2, z3));
-
-
+	
 	float fRadius = (_fWidth / 2);
-	if ((minX > _fCenterX - fRadius) && (minZ > _fCenterZ - fRadius) && (maxX < _fCenterX + fRadius) && (maxZ < _fCenterZ + fRadius))
+	if ((minX >= _fCenterX - fRadius) && (minZ >= _fCenterZ - fRadius) && (maxX <= _fCenterX + fRadius) && (maxZ <= _fCenterZ + fRadius))
 		return true;
 
 	return false;
@@ -187,7 +243,14 @@ bool Dx11_QuadTree::BuildQuadTree(ID3D11Device	*_pDevice, Dx11_Terrain	*_pTerrai
 
 	float centerX = 0.0f, centerZ = 0.0f, width = 0.0f;
 	CalculateMeshDimension(m_uiVertexCount, centerX, centerZ, width);
-	CreateTreeNode(_pDevice, m_pRootNode, centerX, centerZ, width);
+	CreateTreeNode(_pDevice, &m_pRootNode, centerX, centerZ, width);
+
+	//Vertex List Not Required Once QuadTree Build
+	if (m_pVertexList)
+	{
+		delete[] m_pVertexList;
+		m_pVertexList = nullptr;
+	}
 
 	return true;
 }
@@ -197,5 +260,11 @@ void Dx11_QuadTree::Release()
 	if (m_pRootNode)
 	{
 		//delete every child0.
+		ReleaseQuadNode(m_pRootNode);
 	}
+}
+
+void Dx11_QuadTree::Render(ID3D11DeviceContext * _pDeviceContext)
+{
+	RenderQuadNode(_pDeviceContext, m_pRootNode);
 }

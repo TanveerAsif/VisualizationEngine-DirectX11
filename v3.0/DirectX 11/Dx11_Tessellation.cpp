@@ -263,6 +263,7 @@ bool Dx11_Tessellation::IntializeQuad(ID3D11Device * _pDevice)
 	return true;
 }
 
+
 Dx11_Tessellation::Dx11_Tessellation()
 	:m_pTerrain(new Dx11_Terrain()),
 		m_pQuadTree(new Dx11_QuadTree())
@@ -407,6 +408,18 @@ void Dx11_Tessellation::Render(ID3D11DeviceContext * _pDeviceContext, float _fTi
 		_pDeviceContext->HSSetShader(nullptr, nullptr, 0);
 		_pDeviceContext->DSSetShader(nullptr, nullptr, 0);
 		_pDeviceContext->PSSetShader(nullptr, nullptr, 0);
+	}
+}
+
+void Dx11_Tessellation::Render(ID3D11DeviceContext * _pDeviceContext, float _fTick, D3DXMATRIX _worldMat, D3DXMATRIX _viewMat, D3DXMATRIX _projMat)
+{
+	if (_pDeviceContext)
+	{
+		_pDeviceContext->IASetInputLayout(m_pInputLayout);
+		
+		//RenderNode		
+		m_pQuadTree->Render(_pDeviceContext);		
+
 	}
 }
 
