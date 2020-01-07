@@ -48,7 +48,7 @@ protected:
 	ID3D11Buffer		*m_pVertexBuffer = nullptr, *m_pIndexBuffer = nullptr;
 
 	unsigned int		m_uiTessValue = 10;
-	bool IntializeShader(ID3D11Device * _pDevice);
+	bool IntializeShader(ID3D11Device * _pDevice);	
 	bool IntializeGeometry(ID3D11Device * _pDevice);
 	bool IntializeQuad(ID3D11Device * _pDevice);
 

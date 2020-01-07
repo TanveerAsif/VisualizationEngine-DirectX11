@@ -280,8 +280,9 @@ Dx11_Tessellation::~Dx11_Tessellation()
 
 bool Dx11_Tessellation::Init(ID3D11Device * _pDevice, ID3D11DeviceContext * _pDeviceContext)
 {
+	bool bFlag = false;
 	//Init Shader
-	if (IntializeShader(_pDevice))
+	if (IntializeShader(_pDevice) && 0)
 	{
 		////Init Geomtery
 		//if (IntializeGeometry(_pDevice))
@@ -332,10 +333,13 @@ bool Dx11_Tessellation::Init(ID3D11Device * _pDevice, ID3D11DeviceContext * _pDe
 
 			return true;
 		}*/
-			
-		return m_pQuadTree->BuildQuadTree(_pDevice, m_pTerrain);
+		
 	}
-	return true;
+
+	//QuadTree
+	bFlag = m_pQuadTree->BuildQuadTree(_pDevice, m_pTerrain);	
+	
+	return bFlag;
 }
 
 void Dx11_Tessellation::Render(ID3D11DeviceContext * _pDeviceContext, float _fTick, D3DXMATRIX _worldMat, D3DXMATRIX _viewMat, D3DXMATRIX _projMat, float _fCameraDistance)
@@ -414,12 +418,9 @@ void Dx11_Tessellation::Render(ID3D11DeviceContext * _pDeviceContext, float _fTi
 void Dx11_Tessellation::Render(ID3D11DeviceContext * _pDeviceContext, float _fTick, D3DXMATRIX _worldMat, D3DXMATRIX _viewMat, D3DXMATRIX _projMat)
 {
 	if (_pDeviceContext)
-	{
-		_pDeviceContext->IASetInputLayout(m_pInputLayout);
-		
+	{	
 		//RenderNode		
-		m_pQuadTree->Render(_pDeviceContext);		
-
+		m_pQuadTree->Render(_pDeviceContext, _fTick, _worldMat, _viewMat, _projMat);
 	}
 }
 
