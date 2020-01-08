@@ -49,7 +49,7 @@ protected:
 
 	bool IsTriangleContained(unsigned int _uiVertexIndex, float _fCenterX, float _fCenterZ, float _fWidth);
 	unsigned int CountTriangle(float _fCenterX, float _fCenterZ, float _fWidth);
-	D3DXVECTOR4& GetColor(unsigned int _index);
+	D3DXVECTOR4* GetColor(unsigned int _index);
 
 public:
 	Dx11_QuadTree();

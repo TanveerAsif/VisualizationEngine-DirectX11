@@ -163,14 +163,13 @@ void Dx11_QuadTree::RenderQuadNode(ID3D11DeviceContext* _pDeviceContext, stNode*
 	if (m_uiQuadColorCounter > 3)
 		m_uiQuadColorCounter = 0;
 
-	D3DXVECTOR4 newQuadColor = GetColor(m_uiQuadColorCounter);
-
+	D3DXVECTOR4 *pNewQuadColor = GetColor(m_uiQuadColorCounter);
 	D3D11_MAPPED_SUBRESOURCE mappedQuadColorRes;
 	hr = _pDeviceContext->Map(m_pQuadColor, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedQuadColorRes);
 	if (hr != S_OK)
 		return;
 	stQuadNodeColor *pQuadColor = (stQuadNodeColor *)mappedQuadColorRes.pData;
-	pQuadColor->vColor = newQuadColor;
+	pQuadColor->vColor = *pNewQuadColor;
 	_pDeviceContext->Unmap(m_pQuadColor, 0);
 	_pDeviceContext->PSSetConstantBuffers(1, 1, &m_pQuadColor);
 
@@ -179,6 +178,8 @@ void Dx11_QuadTree::RenderQuadNode(ID3D11DeviceContext* _pDeviceContext, stNode*
 
 	//See declaration of iVertexCount
 	_pDeviceContext->DrawIndexed(_pNode->iVertexCount, 0, 0);
+	
+	delete pNewQuadColor;
 }
 
 void Dx11_QuadTree::CalculateMeshDimension(unsigned int _uiVertexCount, float & _fCenterX, float & _fCenterZ, float & _fWidth)
@@ -230,7 +231,7 @@ void Dx11_QuadTree::CreateTreeNode(ID3D11Device * _pDevice, stNode **_pNode, flo
 	if (uiTriangles == 0)
 		return;
 	
-	if (uiTriangles < m_cMAX_TRIANGLES_PER_NODE)
+	if (uiTriangles <= m_cMAX_TRIANGLES_PER_NODE)
 	{
 		(*_pNode)->iVertexCount = uiTriangles * 3;
 		//Create VB and IB
@@ -253,8 +254,7 @@ void Dx11_QuadTree::CreateTreeNode(ID3D11Device * _pDevice, stNode **_pNode, flo
 				pVertices[index] = m_pVertexList[i + 2];
 				pIndices[index] = index;
 				index++;
-			}
-			 
+			}			 
 		}
 
 		D3D11_BUFFER_DESC vertexBuffDesc;
@@ -295,8 +295,7 @@ void Dx11_QuadTree::CreateTreeNode(ID3D11Device * _pDevice, stNode **_pNode, flo
 			unsigned int iTriangles = CountTriangle((_fCenterX + fOffsetX), (_fCenterZ + fOffsetZ), (_fWidth / 2.0));
 			if (iTriangles > 0)
 				CreateTreeNode(_pDevice, &(*_pNode)->m_pChild[iChildIndex], _fCenterX + fOffsetX, _fCenterZ + fOffsetZ, _fWidth / 2.0);
-		}
-		int ok = 1;
+		}		
 	}
 }
 
@@ -318,6 +317,11 @@ bool Dx11_QuadTree::IsTriangleContained(unsigned int _uiVertexIndex, float _fCen
 	float fRadius = (_fWidth / 2);
 	if ((minX >= _fCenterX - fRadius) && (minZ >= _fCenterZ - fRadius) && (maxX <= _fCenterX + fRadius) && (maxZ <= _fCenterZ + fRadius))
 		return true;
+	
+	//if centerX and centerZ lies in between the vertices 
+	//then boundary condition will check with margin one as distance between vertices is one.
+	if ((minX + 1 >= _fCenterX - fRadius) && (minZ + 1 >= _fCenterZ - fRadius) && (maxX - 1 <= _fCenterX + fRadius) && (maxZ - 1 <= _fCenterZ + fRadius))
+		return true;
 
 	return false;
 }
@@ -335,7 +339,7 @@ unsigned int Dx11_QuadTree::CountTriangle(float _fCenterX, float _fCenterZ, floa
 	return uiCount;
 }
 
-D3DXVECTOR4 & Dx11_QuadTree::GetColor(unsigned int _index)
+D3DXVECTOR4* Dx11_QuadTree::GetColor(unsigned int _index)
 {
 	D3DXVECTOR4 *pColor;
 	switch (_index)
@@ -356,7 +360,7 @@ D3DXVECTOR4 & Dx11_QuadTree::GetColor(unsigned int _index)
 		pColor = new D3DXVECTOR4(1.0f, 1.0f, 1.0f, 1.0f);
 		break;
 	}
-	return *pColor;
+	return pColor;
 }
 
 Dx11_QuadTree::Dx11_QuadTree()	
