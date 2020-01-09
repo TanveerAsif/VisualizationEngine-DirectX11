@@ -1,56 +1,30 @@
 
-
-/////struct VertexInput
-/////{
-/////	float3 Pos : POSITION;
-/////	float4 Color : COLOR;
-/////};
-
 struct VertexInput
 {
 	float3 Pos : POSITION;
 	float2 tex  : TEXCOORD0;
-	float3 Color : NORMAL;
+	float3 normal : NORMAL;
 };
 
 
 struct HullInput
 {
 	float3 Position : POSITION;
-	float4 Color : COLOR;
-};
-
-struct PixelInput
-{
-	float4 position : SV_POSITION;
 	float2 tex  : TEXCOORD0;
-	float3 color : NORMAL;
+	float3 normal : NORMAL;
 };
 
-cbuffer MatrixBuffer: register(b1)
-{
-	matrix worldMat;
-	matrix viewMat;
-	matrix projMat;
-};
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////       VS : Vertex Shader                //////////////////////////
+//////////////////////////       VS : Vertex Shader               //////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
-PixelInput MyVertexShader(VertexInput input)
+HullInput MyVertexShader(VertexInput input)
 {
-    PixelInput output;
+    HullInput output;
     
-	//output.Position = input.Pos;	
-	//output.Color = input.Color;
-	
-	output.position = float4(input.Pos, 1.0f);
-	output.position = mul(output.position, worldMat);
-	output.position = mul(output.position, viewMat);
-	output.position = mul(output.position, projMat);
-	
-	
-	output.color = input.Color;
+	output.Position = input.Pos;
+	output.normal = input.normal;
 	output.tex = input.tex;
     
     return output;
@@ -65,9 +39,7 @@ PixelInput MyVertexShader(VertexInput input)
 cbuffer TessellationFactor : register(b0)
 {
 	float fTessAmount;
-	//float3 padding;
-	float fCamDistance;
-	float2 padding;
+	float3 padding;	
 };
 
 
@@ -98,8 +70,9 @@ PatchOutput PatchConstantFunction(InputPatch<HullInput, 3> inputPatch, uint patc
 
 struct DomainInput
 {
-	float3 Pos : SV_POSITION;
-	float4 Color : COLOR;
+	float3 Pos : POSITION;
+	float2 tex  : TEXCOORD0;
+	float3 normal : NORMAL;
 };
 
 [domain("tri")]
@@ -112,7 +85,8 @@ DomainInput MyHullShader(InputPatch<HullInput, 3> inputPatch, uint pointId : SV_
 	DomainInput output;
 	
 	output.Pos = inputPatch[pointId].Position;
-	output.Color = inputPatch[pointId].Color;
+	output.tex = inputPatch[pointId].tex;
+	output.normal = inputPatch[pointId].normal;
 	
 	return output;
 };
@@ -121,19 +95,19 @@ DomainInput MyHullShader(InputPatch<HullInput, 3> inputPatch, uint pointId : SV_
 ////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////       DS : Domain Shader               //////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
-//struct PixelInput
-//{
-//	float4 position : SV_POSITION;
-//	float4 color : COLOR;
-//};
+struct PixelInput
+{
+	float4 position : SV_POSITION;
+	float2 tex  : TEXCOORD0;
+	float3 norm : NORMAL;
+};
 
-///////cbuffer MatrixBuffer: register(b1)
-///////{
-///////	matrix worldMat;
-///////	matrix viewMat;
-///////	matrix projMat;
-///////};
-
+cbuffer MatrixBuffer: register(b1)
+{
+	matrix worldMat;
+	matrix viewMat;
+	matrix projMat;
+};
 
 cbuffer TickBuffer: register(b2)
 {
@@ -163,7 +137,8 @@ PixelInput MyDomainShader(PatchOutput input, float3 uvwCoord : SV_DomainLocation
 	output.position = mul(output.position, projMat);
 	
 	
-	output.color = patch[0].Color;	
+	output.tex = patch[0].tex;	
+	output.norm = patch[0].normal;	
 	return output;
 };
 
@@ -173,7 +148,12 @@ PixelInput MyDomainShader(PatchOutput input, float3 uvwCoord : SV_DomainLocation
 ////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////       PS : Pixel Shader                //////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
+cbuffer QuadColor: register(b3)
+{
+	float4 quadColor;	
+};
 float4 MyPixelShader(PixelInput input) : SV_TARGET
 {
-	return float4(input.color, 1.0);
+	//return float4(0.0f, 1.0f, 0.0f, 1.0f);
+	return quadColor;
 };

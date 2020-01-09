@@ -1,23 +1,23 @@
 #include "Dx11_QuadTree.h"
 #include <fstream>
 
-//bool errorLogger(ID3D10Blob *_pErrorBuffer)
-//{
-//	FILE *fp = NULL;
-//	char *pCompileError = (char *)(_pErrorBuffer->GetBufferPointer());
-//	unsigned long bufferSize = _pErrorBuffer->GetBufferSize();
-//
-//	fopen_s(&fp, "../../Data/ShaderCompileError.txt", "w");
-//	if (fp)
-//	{
-//		for (int i = 0; i < bufferSize; i++)
-//		{
-//			fwrite(&pCompileError[i], sizeof(pCompileError[i]), 1, fp);
-//		}
-//		fclose(fp);
-//	}
-//	return false;
-//}
+bool errorLogger(ID3D10Blob *_pErrorBuffer)
+{
+	FILE *fp = NULL;
+	char *pCompileError = (char *)(_pErrorBuffer->GetBufferPointer());
+	unsigned long bufferSize = _pErrorBuffer->GetBufferSize();
+
+	fopen_s(&fp, "../../Data/ShaderCompileError.txt", "w");
+	if (fp)
+	{
+		for (int i = 0; i < bufferSize; i++)
+		{
+			fwrite(&pCompileError[i], sizeof(pCompileError[i]), 1, fp);
+		}
+		fclose(fp);
+	}
+	return false;
+}
 
 bool Dx11_QuadTree::AddQuadNode(float _fCenterX, float _fCenterZ, float _fWidth)
 {
@@ -91,6 +91,117 @@ bool Dx11_QuadTree::IntializeShader(ID3D11Device * _pDevice)
 	if (hr != S_OK)
 		return false;
 
+	return true;
+}
+
+bool Dx11_QuadTree::InitializaTessalationShader(ID3D11Device * _pDevice)
+{
+	ID3D10Blob *pErrorBuffer, *pVSBuffer, *pHSBuffer, *pDSBuffer, *pPSBuffer;
+	//Compile Vertex Shader
+	HRESULT hr = D3DX11CompileFromFile(L"../../Data/TessellationShader.hlsl", nullptr, nullptr, "MyVertexShader", "vs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, nullptr,
+		&pVSBuffer, &pErrorBuffer, nullptr);
+	if (hr != S_OK)
+	{
+		errorLogger(pErrorBuffer);
+		return false;
+	}
+
+
+	//Compile Hull Shader
+	hr = D3DX11CompileFromFile(L"../../Data/TessellationShader.hlsl", nullptr, nullptr, "MyHullShader", "hs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, nullptr,
+		&pHSBuffer, &pErrorBuffer, nullptr);
+	if (hr != S_OK)
+	{
+		errorLogger(pErrorBuffer);
+		return false;
+	}
+
+
+	//Compile Domain Shader
+	hr = D3DX11CompileFromFile(L"../../Data/TessellationShader.hlsl", nullptr, nullptr, "MyDomainShader", "ds_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, nullptr,
+		&pDSBuffer, &pErrorBuffer, nullptr);
+	if (hr != S_OK)
+	{
+		errorLogger(pErrorBuffer);
+		return false;
+	}
+
+	//Compile Pixel Shader
+	hr = D3DX11CompileFromFile(L"../../Data/TessellationShader.hlsl", nullptr, nullptr, "MyPixelShader", "ps_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, nullptr,
+		&pPSBuffer, &pErrorBuffer, nullptr);
+	if (hr != S_OK)
+	{
+		errorLogger(pErrorBuffer);
+		return false;
+	}
+
+	hr = _pDevice->CreateVertexShader(pVSBuffer->GetBufferPointer(), pVSBuffer->GetBufferSize(), nullptr, &m_pVS);
+	if (hr != S_OK)
+		return false;
+
+	hr = _pDevice->CreateHullShader(pHSBuffer->GetBufferPointer(), pHSBuffer->GetBufferSize(), nullptr, &m_pHS);
+	if (hr != S_OK)
+		return false;
+
+	hr = _pDevice->CreateDomainShader(pDSBuffer->GetBufferPointer(), pDSBuffer->GetBufferSize(), nullptr, &m_pDS);
+	if (hr != S_OK)
+		return false;
+
+	hr = _pDevice->CreatePixelShader(pPSBuffer->GetBufferPointer(), pPSBuffer->GetBufferSize(), nullptr, &m_pPS);
+	if (hr != S_OK)
+		return false;
+
+	D3D11_INPUT_ELEMENT_DESC inputLayout[] =
+	{		
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
+
+	UINT numElements = ARRAYSIZE(inputLayout);
+	hr = _pDevice->CreateInputLayout(inputLayout, numElements, pVSBuffer->GetBufferPointer(), pVSBuffer->GetBufferSize(), &m_pInputLayout);
+	if (hr != S_OK)
+		return false;
+
+	pVSBuffer->Release();
+	pHSBuffer->Release();
+	pDSBuffer->Release();
+	pPSBuffer->Release();
+
+	pVSBuffer = nullptr;
+	pHSBuffer = nullptr;
+	pDSBuffer = nullptr;
+	pPSBuffer = nullptr;
+
+	D3D11_BUFFER_DESC buffDesc;
+	ZeroMemory(&buffDesc, sizeof(buffDesc));
+	buffDesc.Usage = D3D11_USAGE_DYNAMIC;
+	buffDesc.ByteWidth = sizeof(stWVPBuffer);
+	buffDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	buffDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	hr = _pDevice->CreateBuffer(&buffDesc, nullptr, &m_pWVPBuffer);
+	if (hr != S_OK)
+		return false;
+
+	D3D11_BUFFER_DESC TessbuffDesc;
+	ZeroMemory(&TessbuffDesc, sizeof(TessbuffDesc));
+	TessbuffDesc.Usage = D3D11_USAGE_DYNAMIC;
+	TessbuffDesc.ByteWidth = sizeof(stTessellationBuffer);
+	TessbuffDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	TessbuffDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	hr = _pDevice->CreateBuffer(&TessbuffDesc, nullptr, &m_pTessellationBuffer);
+	if (hr != S_OK)
+		return false;
+
+	D3D11_BUFFER_DESC QuadColorDesc;
+	ZeroMemory(&QuadColorDesc, sizeof(QuadColorDesc));
+	QuadColorDesc.Usage = D3D11_USAGE_DYNAMIC;
+	QuadColorDesc.ByteWidth = sizeof(stQuadNodeColor);
+	QuadColorDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	QuadColorDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	hr = _pDevice->CreateBuffer(&QuadColorDesc, nullptr, &m_pQuadColor);
+	if (hr != S_OK)
+		return false;
 	return true;
 }
 
@@ -179,6 +290,91 @@ void Dx11_QuadTree::RenderQuadNode(ID3D11DeviceContext* _pDeviceContext, stNode*
 	//See declaration of iVertexCount
 	_pDeviceContext->DrawIndexed(_pNode->iVertexCount, 0, 0);
 	
+	delete pNewQuadColor;
+}
+
+void Dx11_QuadTree::RenderQuadNodeWithTessellation(ID3D11DeviceContext * _pDeviceContext, stNode * _pNode)
+{
+	unsigned int unChildCount = 0; //Child Count of Node _pNode
+	for (int i = 0; i < 4; i++)
+	{
+		if (_pNode->m_pChild[i])
+		{
+			unChildCount++;
+			RenderQuadNodeWithTessellation(_pDeviceContext, _pNode->m_pChild[i]);
+		}
+	}
+
+	if (unChildCount > 0)
+		return;
+
+	//Render Node
+	//SetVertex Buffer
+	UINT stride = sizeof(Dx11_Terrain::stVertex);
+	UINT offset = 0;
+	_pDeviceContext->IASetVertexBuffers(0, 1, &_pNode->m_pVB, &stride, &offset);
+	_pDeviceContext->IASetIndexBuffer(_pNode->m_pIB, DXGI_FORMAT_R32_UINT, 0);
+	_pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST/*D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST*/);
+		
+	
+	HRESULT hr;	
+	if (m_bUpdateTessValue)
+	{
+		m_bUpdateTessValue = false;
+		D3D11_MAPPED_SUBRESOURCE mappedTessRes;
+		hr = _pDeviceContext->Map(m_pTessellationBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedTessRes);
+		if (hr != S_OK)
+			return;
+		stTessellationBuffer *pTessData = (stTessellationBuffer *)mappedTessRes.pData;
+		pTessData->fTessellationAmount = 4.0f;
+		for (int i = 0; i < 3; i++)
+			pTessData->fPadding[i] = 0.0f;
+		_pDeviceContext->Unmap(m_pTessellationBuffer, 0);
+	}	
+	_pDeviceContext->HSSetConstantBuffers(0, 1, &m_pTessellationBuffer);
+
+	if (m_bUpdateWVP)
+	{
+		m_bUpdateWVP = false;
+		D3D11_MAPPED_SUBRESOURCE mappedWVPResource;
+		hr = _pDeviceContext->Map(m_pWVPBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedWVPResource);
+		if (hr != S_OK)
+			return;
+		stWVPBuffer *pWVPData = (stWVPBuffer *)mappedWVPResource.pData;
+		pWVPData->worldMat = m_worldMat;
+		pWVPData->viewMat = m_viewMat;
+		pWVPData->projMat = m_projMat;
+		_pDeviceContext->Unmap(m_pWVPBuffer, 0);
+	}	
+	_pDeviceContext->DSSetConstantBuffers(1, 1, &m_pWVPBuffer);
+
+	
+	m_uiQuadColorCounter++;
+	if (m_uiQuadColorCounter > 3)
+		m_uiQuadColorCounter = 0;
+	D3DXVECTOR4 *pNewQuadColor = GetColor(m_uiQuadColorCounter);
+	D3D11_MAPPED_SUBRESOURCE mappedQuadColorRes;
+	hr = _pDeviceContext->Map(m_pQuadColor, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedQuadColorRes);
+	if (hr != S_OK)
+		return;
+	stQuadNodeColor *pQuadColor = (stQuadNodeColor *)mappedQuadColorRes.pData;
+	pQuadColor->vColor = *pNewQuadColor;
+	_pDeviceContext->Unmap(m_pQuadColor, 0);
+	_pDeviceContext->PSSetConstantBuffers(3, 1, &m_pQuadColor);
+
+	_pDeviceContext->VSSetShader(m_pVS, nullptr, 0);
+	_pDeviceContext->HSSetShader(m_pHS, nullptr, 0);
+	_pDeviceContext->DSSetShader(m_pDS, nullptr, 0);
+	_pDeviceContext->PSSetShader(m_pPS, nullptr, 0);
+
+	//See declaration of iVertexCount
+	_pDeviceContext->DrawIndexed(_pNode->iVertexCount, 0, 0);
+
+	//Remove the Shader from the Pipeline
+	_pDeviceContext->VSSetShader(nullptr, nullptr, 0);
+	_pDeviceContext->HSSetShader(nullptr, nullptr, 0);
+	_pDeviceContext->DSSetShader(nullptr, nullptr, 0);
+	_pDeviceContext->PSSetShader(nullptr, nullptr, 0);
 	delete pNewQuadColor;
 }
 
@@ -380,9 +576,18 @@ bool Dx11_QuadTree::BuildQuadTree(ID3D11Device	*_pDevice, Dx11_Terrain	*_pTerrai
 	if (!_pTerrain->Init(_pDevice))
 		return false;
 		
-	//Init Shader
+#ifndef _TESSELLATION_
+	////Init Shader
 	if (!IntializeShader(_pDevice))
 		return false;
+#else
+	//Init Tesselation Shader
+	if (!InitializaTessalationShader(_pDevice))
+		return false;
+#endif
+
+	
+
 
 	//Build Tree
 	m_uiVertexCount = _pTerrain->GetVertexCount();
@@ -415,9 +620,8 @@ void Dx11_QuadTree::Release()
 
 void Dx11_QuadTree::Render(ID3D11DeviceContext * _pDeviceContext, float _fTick, D3DXMATRIX _worldMat, D3DXMATRIX _viewMat, D3DXMATRIX _projMat)
 {
-	
 	_pDeviceContext->IASetInputLayout(m_pInputLayout);
-	
+
 	//Set world, view and proj matrix
 	m_worldMat = _worldMat;
 	m_viewMat = _viewMat;
@@ -425,7 +629,13 @@ void Dx11_QuadTree::Render(ID3D11DeviceContext * _pDeviceContext, float _fTick, 
 	D3DXMatrixTranspose(&m_worldMat, &m_worldMat);
 	D3DXMatrixTranspose(&m_viewMat, &m_viewMat);
 	D3DXMatrixTranspose(&m_projMat, &m_projMat);
-
+	m_bUpdateWVP = true;
+	
 	m_uiQuadColorCounter = 0;
+
+#ifndef _TESSELLATION_
 	RenderQuadNode(_pDeviceContext, m_pRootNode);
+#else
+	RenderQuadNodeWithTessellation(_pDeviceContext, m_pRootNode);
+#endif // !_TESS
 }

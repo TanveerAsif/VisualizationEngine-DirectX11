@@ -6,23 +6,23 @@
 #include "Dx11_QuadTree.h"
 
 
-bool errorLogger(ID3D10Blob *_pErrorBuffer)
-{
-	FILE *fp = NULL;
-	char *pCompileError = (char *)(_pErrorBuffer->GetBufferPointer());
-	unsigned long bufferSize = _pErrorBuffer->GetBufferSize();
-
-	fopen_s(&fp, "../../Data/ShaderCompileError.txt", "w");
-	if (fp)
-	{
-		for (int i = 0; i < bufferSize; i++)
-		{
-			fwrite(&pCompileError[i], sizeof(pCompileError[i]), 1, fp);
-		}
-		fclose(fp);
-	}
-	return false;
-}
+//bool errorLogger(ID3D10Blob *_pErrorBuffer)
+//{
+//	FILE *fp = NULL;
+//	char *pCompileError = (char *)(_pErrorBuffer->GetBufferPointer());
+//	unsigned long bufferSize = _pErrorBuffer->GetBufferSize();
+//
+//	fopen_s(&fp, "../../Data/ShaderCompileError.txt", "w");
+//	if (fp)
+//	{
+//		for (int i = 0; i < bufferSize; i++)
+//		{
+//			fwrite(&pCompileError[i], sizeof(pCompileError[i]), 1, fp);
+//		}
+//		fclose(fp);
+//	}
+//	return false;
+//}
 
 
 bool Dx11_Tessellation::IntializeShader(ID3D11Device * _pDevice)
@@ -33,7 +33,7 @@ bool Dx11_Tessellation::IntializeShader(ID3D11Device * _pDevice)
 		&pVSBuffer, &pErrorBuffer, nullptr);
 	if (hr != S_OK)
 	{
-		errorLogger(pErrorBuffer);
+		//errorLogger(pErrorBuffer);
 		return false;
 	}
 		
@@ -43,7 +43,7 @@ bool Dx11_Tessellation::IntializeShader(ID3D11Device * _pDevice)
 		&pHSBuffer, &pErrorBuffer, nullptr);
 	if (hr != S_OK)
 	{
-		errorLogger(pErrorBuffer);
+		//errorLogger(pErrorBuffer);
 		return false;
 	}
 		
@@ -53,7 +53,7 @@ bool Dx11_Tessellation::IntializeShader(ID3D11Device * _pDevice)
 		&pDSBuffer, &pErrorBuffer, nullptr);
 	if (hr != S_OK)
 	{
-		errorLogger(pErrorBuffer);
+		//errorLogger(pErrorBuffer);
 		return false;
 	}
 
@@ -62,7 +62,7 @@ bool Dx11_Tessellation::IntializeShader(ID3D11Device * _pDevice)
 		&pPSBuffer, &pErrorBuffer, nullptr);
 	if (hr != S_OK)
 	{
-		errorLogger(pErrorBuffer);
+		//errorLogger(pErrorBuffer);
 		return false;
 	}
 
