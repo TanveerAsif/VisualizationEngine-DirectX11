@@ -12,48 +12,7 @@ bool g_bComeOutFromWater = false;
 bool g_bRenderWatertoAir = false;
 float g_fInAirDuration = 0.0f;
 
-//#define VOLUME_RENDER
 
-
-void Dx11_Graphics::RenderFrontFace(float _fTick)
-{
-	ID3D11DeviceContext *pDeviceContext = m_pDirect3D->GetDeviceContext();
-	m_pFrontFaceSurface->SetRenderTarget(pDeviceContext);
-	m_pFrontFaceSurface->BeginScene(pDeviceContext);
-	m_pDirect3D->SetRasterStateFrontFace();
-	D3DXMATRIX matWorld = m_pDirect3D->GetWorldMatrix();
-	D3DXMATRIX matView = m_pCamera->GetViewMatrix();
-	D3DXMATRIX matProj = m_pFrontFaceSurface->GetProjectionMatrix();// m_pDirect3D->GetPerspectiveProjectionMatrix();
-
-	//NOT USING
-	D3DXVECTOR3 vCamPos = m_pCamera->GetPosition();
-	D3DXVECTOR3 vCamDir = m_pCamera->GetDirection();
-
-	m_pVolRender->Render(pDeviceContext, matWorld, matView, matProj, vCamPos, vCamDir);
-
-	m_pDirect3D->SetBackBufferRenderTarget();
-	m_pDirect3D->SetRasterSolid();
-}
-
-void Dx11_Graphics::RenderBackFace(float _fTick)
-{
-	ID3D11DeviceContext *pDeviceContext = m_pDirect3D->GetDeviceContext();
-	m_pBackFaceSurface->SetRenderTarget(pDeviceContext);
-	m_pBackFaceSurface->BeginScene(pDeviceContext);
-	m_pDirect3D->SetRasterStateBackFace();
-	D3DXMATRIX matWorld = m_pDirect3D->GetWorldMatrix();
-	D3DXMATRIX matView = m_pCamera->GetViewMatrix();
-	D3DXMATRIX matProj = m_pBackFaceSurface->GetProjectionMatrix();// m_pDirect3D->GetPerspectiveProjectionMatrix();
-
-	//NOT USING
-	D3DXVECTOR3 vCamPos = m_pCamera->GetPosition();
-	D3DXVECTOR3 vCamDir = m_pCamera->GetDirection();
-
-	m_pVolRender->Render(pDeviceContext, matWorld, matView, matProj, vCamPos, vCamDir);
-
-	m_pDirect3D->SetBackBufferRenderTarget();
-	m_pDirect3D->SetRasterSolid();
-}
 
 Dx11_Graphics::Dx11_Graphics()
 {	
@@ -69,13 +28,6 @@ Dx11_Graphics::Dx11_Graphics()
 	m_bLightShaftEnable = false;
 
 	m_pCamera = new Dx11_Camera();
-	m_pFrontFaceSurface = new Dx11_Render2Texture();
-	m_pBackFaceSurface = new Dx11_Render2Texture();
-
-	m_pFrontModel = new Dx11_Model();
-	m_pBackModel = new Dx11_Model();
-	m_pFrontShader = new Dx11_Shaders();
-	m_pBackShader = new Dx11_Shaders();
 }
 
 
@@ -85,7 +37,7 @@ Dx11_Graphics::~Dx11_Graphics()
 }
 
 
-bool Dx11_Graphics::Initialize(HWND hWnd, UINT _width, UINT _height, std::string _strRawFilePath, UINT _ImageWidth, UINT _ImageHeight, UINT _NoOfImages)
+bool Dx11_Graphics::Initialize(HWND hWnd, UINT _width, UINT _height)
 {	
 	bool bRetValue = false;	
 	m_nScreenWidth = _width;// GetSystemMetrics(SM_CXSCREEN);
@@ -105,45 +57,23 @@ bool Dx11_Graphics::Initialize(HWND hWnd, UINT _width, UINT _height, std::string
 			matViewMatrix,
 			m_nScreenWidth, m_nScreenHeight
 		);
+		
 		if (!bRetValue)
 			return bRetValue;
 
-
-#ifndef VOLUME_RENDER
-		m_pAssimp = new Dx11_Assimp();
+		/*m_pAssimp = new Dx11_Assimp();
 		bRetValue = m_pAssimp->InitAssimp(hWnd, pDevice, pDeviceContext);
 		if (!bRetValue)
 		{
 			MessageBox(hWnd, L"FAILED TO INITIALIZE ASSIMP : ", L"error", MB_ICONEXCLAMATION | MB_OK);
 			return bRetValue;
-		}
+		}*/
 
-#else
-		//James.raw
-		//teapot.raw
-		//m_pVolRender = new Dx11_VolumeRendering("Data/bighead.den", 256, 256, 225);
-		m_uScaleWidth = _ImageWidth;
-		m_uScaleHeight = _ImageHeight;
-		m_uScaleDepth = _NoOfImages;
-		m_pVolRender = new Dx11_VolumeRendering(_strRawFilePath, m_uScaleWidth, m_uScaleHeight, m_uScaleDepth);
-		
-		bRetValue = m_pVolRender->Init(pDevice);
+		m_pTessellation = new Dx11_Tessellation();
+		bRetValue = m_pTessellation->Init(pDevice, pDeviceContext);
 		if (!bRetValue)
-		{
-			MessageBox(hWnd, L"FAILED TO INITIALIZE VolumetricData : ", L"error", MB_ICONEXCLAMATION | MB_OK);
 			return bRetValue;
-		}	
-		
-		m_pFrontFaceSurface->Initialize(pDevice, SHADOW_WIDTH, SHADOW_HEIGHT, SCREEN_NEAR, SCREEN_DEPTH);
-		m_pBackFaceSurface->Initialize(pDevice, SHADOW_WIDTH, SHADOW_HEIGHT, SCREEN_NEAR, SCREEN_DEPTH);
 
-		//
-		m_pFrontModel->LoadFloor(pDevice, L"../../Data/dummy.dds");
-		m_pBackModel->LoadFloor(pDevice, L"../../Data/dummy.dds");
-		m_pFrontShader->InitializeFloorShader(pDevice, pDeviceContext, L"../../Data/MyShaderFloor.hlsl");
-		m_pBackShader->InitializeFloorShader(pDevice, pDeviceContext, L"../../Data/MyShaderFloor.hlsl");
-
-#endif
 	}
 	else
 		MessageBox(hWnd, L"COULD NOT INITIALIZE Direct3D", L"error", MB_ICONEXCLAMATION | MB_OK);
@@ -159,73 +89,30 @@ void Dx11_Graphics::Process(float _fTick)
 	else
 		m_fHeading = 0.0f;
 
-	if (m_pVolRender)
-		m_pVolRender->UpdateHeading();
 }
 
 void Dx11_Graphics::Render(float _fTick)
 {
-#ifdef VOLUME_RENDER
-	RenderFrontFace(_fTick);
-	RenderBackFace(_fTick);	
-#endif
 	RenderScene(_fTick);
 }
 
 
 void Dx11_Graphics::Shutdown()
 {
-	if (m_pFrontModel)
+
+	if (m_pTessellation)
 	{
-		m_pFrontModel->Shutdown();
-		delete m_pFrontModel;
+		m_pTessellation->Release();
+		delete m_pTessellation;
+		m_pTessellation = nullptr;
 	}
 
-	if (m_pFrontShader)
-	{
-		m_pFrontShader->Shutdown();
-		delete m_pFrontShader;
-	}
-
-	if (m_pBackModel)
-	{
-		m_pBackModel->Shutdown();
-		delete m_pBackModel;
-	}
-
-	if (m_pBackShader)
-	{
-		m_pBackShader->Shutdown();
-		delete m_pBackShader;
-	}
-
-	if (m_pFrontFaceSurface)
-	{
-		m_pFrontFaceSurface->Shutdown();
-		delete m_pFrontFaceSurface;
-	}
-
-	if (m_pBackFaceSurface)
-	{
-		m_pBackFaceSurface->Shutdown();
-		delete m_pBackFaceSurface;
-	}
-
-
-	if (m_pVolRender)
-	{		
-		m_pVolRender->ShutDown();
-		delete m_pVolRender;				
-	}
-
-#ifndef VOLUME_RENDER
 	if (m_pAssimp)
 	{
 		m_pAssimp->ShutDown();
 		delete m_pAssimp;
 		m_pAssimp = NULL;
 	}
-#endif
 	
 	if (m_pCamera)
 	{
@@ -255,8 +142,6 @@ void Dx11_Graphics::RenderScene(float _fTick)
 		projectionMat = m_pDirect3D->GetPerspectiveProjectionMatrix();
 		orthoMat = m_pDirect3D->GetOrthogonalProjectionMatrix();
 
-#ifndef VOLUME_RENDER
-
 		if (m_pAssimp)
 		{		
 			worldMat = m_pDirect3D->GetWorldMatrix();
@@ -268,46 +153,21 @@ void Dx11_Graphics::RenderScene(float _fTick)
 			m_pAssimp->Render(m_pDirect3D->GetDevice(), pDeviceContext, worldMat, viewMat, projectionMat);
 		}
 
-#else
-
-		ID3D11ShaderResourceView *pFront = m_pFrontFaceSurface->GetShaderResourceView();
-		ID3D11ShaderResourceView *pBack = m_pBackFaceSurface->GetShaderResourceView();
-		if (m_pFrontModel && m_pBackModel && m_bShowMapEnable)
-		{	
-			worldMat = m_pDirect3D->GetWorldMatrix();			
-			D3DXMatrixTranslation(&matTranslate, -5.0f, 0.0f, 0.0f);
-			D3DXMatrixScaling(&matScale, 10.0f, 10.0f, 10.0f);
-			matTransform = /*matScale **/ matTranslate * worldMat;
-
-			m_pFrontModel->RenderFloor(pDeviceContext);
-			m_pFrontShader->RenderFloorShader(pDeviceContext, m_pFrontModel->GetFloorIndexCount(), matTransform, viewMat, projectionMat, pFront);
-
-			D3DXMatrixTranslation(&matTranslate, 5.0f, 0.0f, 0.0f);
-			D3DXMatrixScaling(&matScale, 10.0f, 10.0f, 10.0f);
-			matTransform = /*matScale **/ matTranslate * worldMat;
-			m_pBackModel->RenderFloor(pDeviceContext);
-			m_pBackShader->RenderFloorShader(pDeviceContext, m_pBackModel->GetFloorIndexCount(), matTransform, viewMat, projectionMat, pBack);
-		}
-
-
-		//m_pDirect3D->EnableBlendStateVolume(); //SET DURING INITIALIZATION
-		if (m_pVolRender)
+		if (m_pTessellation)
 		{			
-			worldMat = m_pDirect3D->GetWorldMatrix();			
-			D3DXMatrixTranslation(&matTranslate, -5.0f, -5.0f, -5.0f);
-			D3DXMatrixScaling(&matScale, 10.0f, 10.0f, 10.0f);
-			//worldMat = matScale * matTrans * worldMat;
-			
-			//m_pVolRender->Render(pDeviceContext, worldMat, viewMat, projectionMat,m_pCamera->GetPosition(), m_pCamera->GetDirection());
-			m_pVolRender->RenderRayVolume(pDeviceContext, worldMat, viewMat, projectionMat, pFront, pBack);
+			D3DXMatrixRotationX(&matRotY, -1 * D3DX_PI * 90 / 180);
+			worldMat = m_pDirect3D->GetWorldMatrix();
+			//worldMat = matRotY * worldMat;
+
+			D3DXVECTOR3 vCamDis = m_pCamera->GetPosition() - D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+			float fCamDistance = D3DXVec3Length(&vCamDis);
+			//m_pTessellation->Render(pDeviceContext, _fTick, worldMat, viewMat, projectionMat, fCamDistance);			
+
+			//QuadTree
+			m_pTessellation->Render(pDeviceContext, worldMat, viewMat, projectionMat, m_pCamera->GetPosition());
 		}
-		//m_pDirect3D->SetRasterSolid();		
+			
 
-		int iN, iF, nPoints;
-		m_pVolRender->GetNearestAndFarthestVerticesIndex(iN, iF);
-		m_pVolRender->GetIntersectionPoint(nPoints);
-
-#endif
 		//RENDER TEXT
 		//m_pDirect3D->SetDepthBufferOFF();
 		m_pDirect3D->EnableBlendState();
@@ -349,10 +209,6 @@ void Dx11_Graphics::ShowWireFrame()
 
 void Dx11_Graphics::SetTransferValue(float _fValue)
 {	
-	if (m_pVolRender)
-	{
-		m_pVolRender->SetColorScaleValue(_fValue);
-	}
 	
 }
 
@@ -372,3 +228,10 @@ void Dx11_Graphics::EnableShadowMap()
 {
 	m_bShowMapEnable = (m_bShowMapEnable == false) ? true : false;
 }
+
+void Dx11_Graphics::SetTessellationFactor(int _iFactor)
+{
+	if (m_pTessellation)
+		m_pTessellation->UpdateTessellationFactor(_iFactor);
+}
+

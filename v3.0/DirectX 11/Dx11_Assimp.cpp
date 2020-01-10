@@ -97,6 +97,7 @@ std::vector<Dx11_Texture *> Dx11_Assimp::loadMaterialTextures(aiMaterial* materi
 				break;
 			}
 		}
+
 		if (!skip)
 		{   
 			//If texture hasn't been loaded already, load it
@@ -111,36 +112,66 @@ std::vector<Dx11_Texture *> Dx11_Assimp::loadMaterialTextures(aiMaterial* materi
 			{
 				std::string szFileName = std::string(aiStr.C_Str());
 				szFileName = m_sDirectory + '/' + szFileName;
+				if (szFileName.substr(szFileName.find_last_of(".") + 1) == "tga") 
+				{
+					//Replace Texture Extension .TGA to .DDS AS DirectX11 STOP TGA SUPPORT
+					size_t index = 0;
+					index = szFileName.find(".tga", index);
+					if (index != std::string::npos)
+					{
+						szFileName.replace(index, 4, ".dds");
+					}
+				}
+				
 				std::wstring wszFileName = std::wstring(szFileName.begin(), szFileName.end());
 				/*hr = CreateWICTextureFromFile(m_pDevice, m_pDeviceContext, filenamews.c_str(), nullptr, &texture.pTexture);
 				if (FAILED(hr))
 					MessageBox(m_hWnd, L"Texture couldn't be loaded", L"Error!", MB_ICONERROR | MB_OK);*/
-				pTexture = new Dx11_Texture();				;
-				if (pTexture->Initiazlize(m_pDevice, &wszFileName[0]) == false)
+
+				bool bTexFound = false;
+				//CHECK Texture Already Exist
+				if (m_vTextures.size() > 0 )
 				{
-					//FREE TEXTURE
-					MessageBox(NULL, L"Texture Load Fail", L"Error", MB_ICONERROR | MB_OK);
-					if (pTexture)
-					{
-						pTexture->Shutdown();
-						delete	pTexture;
-						pTexture = NULL;
+					for (int i = 0; i < m_vTextures.size(); i++)
+					{						
+						if (wcscmp(m_vTextures[i]->GetTextureFileName(), wszFileName.c_str()) == 0)
+						{
+							bTexFound = true;
+							break;
+						}
 					}
+
 				}
-				else
+				
+				if (!bTexFound)
 				{
-					//STORE TEXTURE
-					std::wstring wszTexType(typeName.begin(), typeName.end());
-					const WCHAR	*pwszTexType = wszTexType.c_str();
+					pTexture = new Dx11_Texture(); ;
+					if (pTexture->Initiazlize(m_pDevice, &wszFileName[0]) == false)
+					{
+						//FREE TEXTURE
+						MessageBox(NULL, L"Texture Load Fail", L"Error", MB_ICONERROR | MB_OK);
+						if (pTexture)
+						{
+							pTexture->Shutdown();
+							delete	pTexture;
+							pTexture = NULL;
+						}
+					}
+					else
+					{
+						//STORE TEXTURE
+						std::wstring wszTexType(typeName.begin(), typeName.end());
+						const WCHAR	*pwszTexType = wszTexType.c_str();
 
-					std::string  szTexFile(aiStr.C_Str());
-					std::wstring wszTexFileName(szTexFile.begin(), szTexFile.end());
-					const WCHAR	*pwszTexFileName = wszTexFileName.c_str();
+						std::string  szTexFile(aiStr.C_Str());
+						std::wstring wszTexFileName(szTexFile.begin(), szTexFile.end());
+						const WCHAR	*pwszTexFileName = wszTexFileName.c_str();
 
-					pTexture->SetTextureType(pwszTexType);
-					pTexture->SetTextureFileName(pwszTexFileName);
-					vTextures.push_back(pTexture);
-					m_vTextures.push_back(pTexture);  // Store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.
+						pTexture->SetTextureType(pwszTexType);
+						pTexture->SetTextureFileName(pwszTexFileName);
+						vTextures.push_back(pTexture);
+						m_vTextures.push_back(pTexture);  // Store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.
+					}
 				}				
 			}			
 		}
@@ -197,8 +228,9 @@ bool Dx11_Assimp::InitAssimp(HWND hWnd, ID3D11Device * pDevice, ID3D11DeviceCont
 	////////bFlag = LoadMesh("Data/Spider_ascii.stl");
 	////////bFlag = LoadMesh("Data/spider.obj");
 	//////////bFlag = LoadMesh("Data/L200-OBJ/L200-OBJ.obj");
-	bFlag = LoadMesh("../../Data/Spider/spider.obj");
-	
+	//bFlag = LoadMesh("../../Data/Spider/spider.obj");
+	//bFlag = LoadMesh("../../Data/Alto/alto.x");
+	bFlag = LoadMesh("../../Data/Tug/tug.x");
 	
 
 	return bFlag;

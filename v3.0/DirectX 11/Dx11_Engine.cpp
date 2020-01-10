@@ -21,32 +21,29 @@ Dx11_Engine::~Dx11_Engine()
 }
 
 
-bool Dx11_Engine::Initialize(HWND _hWnd, unsigned int _uWidth, unsigned int _uHeight, std::string _strRawFilePath, UINT _ImageWidth, UINT _ImageHeight, UINT _NoOfImages)
+bool Dx11_Engine::Initialize(HWND _hWnd, unsigned int _uWidth, unsigned int _uHeight)
 {
 	bool bRetValue = false;
 
 #ifdef VISUALIZATION_APPLICATION
-	if (InitializeWindow())
-	{
+	if (!InitializeWindow())
+		return false;
 #else
 	m_hWnd = _hWnd;
 #endif		
-		m_pGraphics = new Dx11_Graphics();
-		m_pInput = new Dx11_Input();
 
-		if (m_pGraphics && m_pInput)
+	m_pGraphics = new Dx11_Graphics();
+	m_pInput = new Dx11_Input();
+
+	if (m_pGraphics && m_pInput)
+	{
+		m_pInput->Initialize();			
+		if (m_pGraphics->Initialize(m_hWnd, _uWidth, _uHeight))
 		{
-			m_pInput->Initialize();
-			
-			if (m_pGraphics->Initialize(m_hWnd, _uWidth, _uHeight, _strRawFilePath,  _ImageWidth,  _ImageHeight,  _NoOfImages))
-			{
-				bRetValue = true;
-			}			
-		}
-#ifdef VISUALIZATION_APPLICATION
+			bRetValue = true;
+		}			
 	}
-#endif
-
+	
 	return bRetValue;
 }
 
@@ -59,13 +56,16 @@ void Dx11_Engine::Run()
 	MSG msg;
 	ZeroMemory(&msg, sizeof(MSG));
 	//NOTE : Winmm.lib ADD INTO LINKER TO RESOLVE timeGetTime() 
+	//Returns the system time, in milliseconds.
 	unsigned int tickCount = 0, lastTickCount = timeGetTime();
-	
+	double dTickDuration = 0;
+
 	while(true)
 	{
 		tickCount = timeGetTime();
-		float fTickDiff = (float(tickCount - lastTickCount)) / 1000;
-		lastTickCount = tickCount;
+		float fTickDiff = (float)((tickCount - lastTickCount) / 1000.0);
+		dTickDuration += (double)((tickCount - lastTickCount) / 1000.0);
+		
 
 		while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
@@ -76,77 +76,21 @@ void Dx11_Engine::Run()
 		if (msg.message == WM_QUIT)
 			break;
 
-
-		if (m_pInput->IsKeyDown(VK_ESCAPE))
+		if (UpdateKeyPress() == false)
 			break;
 
-		if (m_pInput->IsKeyDown('W'))
-		{
-			m_pInput->KeyUp('W');
-			m_pGraphics->ShowWireFrame();
-		}		
-		
-		if (m_pInput->IsKeyDown('R'))
-		{
-			m_pInput->KeyUp('R');
-			m_pGraphics->UpdateCamera('R');
-		}
+		/*char msgbuf[100];
+		sprintf_s(msgbuf, "Render Interval Tick %f\n", dTickDuration);
+		OutputDebugStringA(msgbuf);*/
 
-		if (m_pInput->IsKeyDown('T'))
+		if (fTickDiff > 0.125)
 		{
-			m_pInput->KeyUp('T');
-			m_pGraphics->UpdateCamera('T');
-		}
+			lastTickCount = tickCount;
+			//dTickDuration = 0; //Reset
 
-		if (m_pInput->IsKeyDown('M'))
-		{
-			m_pInput->KeyUp('M');
-			m_pGraphics->EnableShadowMap();
-		}
-
-		if (m_pInput->IsKeyDown(VK_LEFT))
-		{
-			m_pInput->KeyUp(VK_LEFT);
-			m_pGraphics->UpdateCamera(VK_LEFT);
-		}
-
-		if (m_pInput->IsKeyDown(VK_RIGHT))
-		{
-			m_pInput->KeyUp(VK_RIGHT);
-			m_pGraphics->UpdateCamera(VK_RIGHT);
-		}
-
-		if (m_pInput->IsKeyDown(VK_UP))
-		{
-			m_pInput->KeyUp(VK_UP);
-			m_pGraphics->UpdateCamera(VK_UP);
-		}
-
-		if (m_pInput->IsKeyDown(VK_DOWN))
-		{
-			m_pInput->KeyUp(VK_DOWN);
-			m_pGraphics->UpdateCamera(VK_DOWN);
-		}
-		
-		if (m_pInput->IsKeyDown(VK_PRIOR))
-		{
-			m_pInput->KeyUp(VK_PRIOR);
-			m_pGraphics->UpdateCamera(VK_PRIOR);
-		}
-
-		if (m_pInput->IsKeyDown(VK_NEXT))
-		{
-			m_pInput->KeyUp(VK_NEXT);
-			m_pGraphics->UpdateCamera(VK_NEXT);
-		}
-		
-		if (msg.message == WM_MOUSEWHEEL)
-		{			
-			//m_pGraphics->UpdateCamera('T');
-		}
-
-		m_pGraphics->Process(fTickDiff);
-		m_pGraphics->Render(fTickDiff);
+			m_pGraphics->Process(fTickDiff);
+			m_pGraphics->Render(fTickDiff);
+		}	
 
 	}
 
@@ -187,6 +131,85 @@ bool Dx11_Engine::InitializeWindow()
 	ShowWindow(m_hWnd, SW_SHOW);
 	return true;
 	
+}
+
+bool Dx11_Engine::UpdateKeyPress()
+{
+	if (m_pInput->IsKeyDown(VK_ESCAPE))
+		return false;
+
+	if (m_pInput->IsKeyDown('W'))
+	{
+		m_pInput->KeyUp('W');
+		m_pGraphics->ShowWireFrame();
+	}
+
+	if (m_pInput->IsKeyDown('R'))
+	{
+		m_pInput->KeyUp('R');
+		m_pGraphics->UpdateCamera('R');
+	}
+
+	if (m_pInput->IsKeyDown('T'))
+	{
+		m_pInput->KeyUp('T');
+		m_pGraphics->SetTessellationFactor(1);
+	}
+
+	if (m_pInput->IsKeyDown('Y'))
+	{
+		m_pInput->KeyUp('Y');
+		m_pGraphics->SetTessellationFactor(-1);
+	}
+
+	if (m_pInput->IsKeyDown('M'))
+	{
+		m_pInput->KeyUp('M');
+		m_pGraphics->EnableShadowMap();
+	}
+
+	if (m_pInput->IsKeyDown(VK_LEFT))
+	{
+		m_pInput->KeyUp(VK_LEFT);
+		m_pGraphics->UpdateCamera(VK_LEFT);
+	}
+
+	if (m_pInput->IsKeyDown(VK_RIGHT))
+	{
+		m_pInput->KeyUp(VK_RIGHT);
+		m_pGraphics->UpdateCamera(VK_RIGHT);
+	}
+
+	if (m_pInput->IsKeyDown(VK_UP))
+	{
+		m_pInput->KeyUp(VK_UP);
+		m_pGraphics->UpdateCamera(VK_UP);
+	}
+
+	if (m_pInput->IsKeyDown(VK_DOWN))
+	{
+		m_pInput->KeyUp(VK_DOWN);
+		m_pGraphics->UpdateCamera(VK_DOWN);
+	}
+
+	if (m_pInput->IsKeyDown(VK_PRIOR))
+	{
+		m_pInput->KeyUp(VK_PRIOR);
+		m_pGraphics->UpdateCamera(VK_PRIOR);
+	}
+
+	if (m_pInput->IsKeyDown(VK_NEXT))
+	{
+		m_pInput->KeyUp(VK_NEXT);
+		m_pGraphics->UpdateCamera(VK_NEXT);
+	}
+
+	////if (msg.message == WM_MOUSEWHEEL)
+	////{
+	////	//m_pGraphics->UpdateCamera('T');
+	////}
+
+	return true;
 }
 
 LRESULT CALLBACK Dx11_Engine::MessageHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)

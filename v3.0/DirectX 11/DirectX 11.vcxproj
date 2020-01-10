@@ -190,7 +190,7 @@
       </PrecompiledHeader>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;VISUALIZATION_EXPORTS;VISUALIZATION_APPLICATION;VOLUME_RENDER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;VISUALIZATION_APPLICATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;..\..\assimp\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
@@ -267,7 +267,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;VISUALIZATION_APPLICATION;VOLUME_RENDER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;VISUALIZATION_APPLICATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;..\..\assimp\</AdditionalIncludeDirectories>
     </ClCompile>
@@ -276,8 +276,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib\x64</AdditionalLibraryDirectories>
-      <AdditionalDependencies>d3d11.lib;d3dx11.lib;d3dx10.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)Lib\x64;..\..\assimp\lib64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d11.lib;d3dx11.lib;d3dx10.lib;Winmm.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
       <Command>copy "..\..\assimp\bin64\assimp.dll" "..\x64\Release\"</Command>
@@ -307,7 +307,7 @@
   <ItemGroup>
     <ClCompile Include="Dx11_Assimp.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseDll|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugDll|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -318,8 +318,11 @@
     <ClCompile Include="Dx11_Graphics.cpp" />
     <ClCompile Include="Dx11_Input.cpp" />
     <ClCompile Include="Dx11_Model.cpp" />
+    <ClCompile Include="Dx11_QuadTree.cpp" />
     <ClCompile Include="Dx11_Render2Texture.cpp" />
     <ClCompile Include="Dx11_Shaders.cpp" />
+    <ClCompile Include="Dx11_Terrain.cpp" />
+    <ClCompile Include="Dx11_Tessellation.cpp" />
     <ClCompile Include="Dx11_Texture.cpp" />
     <ClCompile Include="Dx11_VolumeRendering.cpp" />
     <ClCompile Include="Source.cpp" />
@@ -327,7 +330,7 @@
   <ItemGroup>
     <ClInclude Include="Dx11_Assimp.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseDll|x64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="Dx11_Camera.h" />
@@ -337,8 +340,11 @@
     <ClInclude Include="Dx11_Graphics.h" />
     <ClInclude Include="Dx11_Input.h" />
     <ClInclude Include="Dx11_Model.h" />
+    <ClInclude Include="Dx11_QuadTree.h" />
     <ClInclude Include="Dx11_Render2Texture.h" />
     <ClInclude Include="Dx11_Shaders.h" />
+    <ClInclude Include="Dx11_Terrain.h" />
+    <ClInclude Include="Dx11_Tessellation.h" />
     <ClInclude Include="Dx11_Texture.h" />
     <ClInclude Include="Dx11_VolumeRendering.h" />
     <ClInclude Include="resource.h" />

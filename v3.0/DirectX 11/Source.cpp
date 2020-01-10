@@ -9,12 +9,8 @@ Dx11_Engine *g_pEngine = NULL;
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline, int iCmdShow)
 {
 
-	g_pEngine = new Dx11_Engine();
-	//"../../Data/Volume_Pores_tiff.raw", 589,982,32)
-	//"../../Data/ImageData.raw", 983, 484, 305
-	//"../../Data/ImageData.raw", 2000, 1232, 773
-	//"../../Data/bighead.den", 256, 256, 225
-	if (g_pEngine->Initialize(0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), "../../Data/bighead.den", 256, 256, 225))
+	g_pEngine = new Dx11_Engine();	
+	if (g_pEngine->Initialize(0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN)))
 	{
 		g_pEngine->Run();
 	}
@@ -23,7 +19,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline,
 	return 0;
 }
 
-#endif
+#elif
 
 
 //typedef void (CALLBACK * fnCallBackFunc)(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -35,7 +31,7 @@ extern "C"
 		g_pEngine = new Dx11_Engine();
 		if (g_pEngine)
 		{
-			return g_pEngine->Initialize(_hWnd, _uWidth,  _uHeight, "Data/James.raw", 983, 484, 305);
+			return g_pEngine->Initialize(_hWnd, _uWidth,  _uHeight);
 		}
 		return false;
 	}
@@ -45,7 +41,8 @@ extern "C"
 		g_pEngine = new Dx11_Engine();
 		if (g_pEngine)
 		{
-			return g_pEngine->Initialize(_hWnd, _uWidth, _uHeight, _strRawFilePath, _uImageWidth, _uImageHeight, _uNoOfImages);
+			//, _strRawFilePath, _uImageWidth, _uImageHeight, _uNoOfImages
+			return g_pEngine->Initialize(_hWnd, _uWidth, _uHeight);
 		}
 		return false;
 	}
@@ -81,3 +78,7 @@ extern "C"
 			g_pEngine->SetTransferFunctionValue(_fValue);
 	}
 }
+
+
+
+#endif

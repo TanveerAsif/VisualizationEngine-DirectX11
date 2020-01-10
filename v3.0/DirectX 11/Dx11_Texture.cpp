@@ -18,12 +18,11 @@ bool Dx11_Texture::Initiazlize(ID3D11Device *pDevice, WCHAR *pTextureFile)
 {	
 	HRESULT hr = D3DX11CreateShaderResourceViewFromFile(pDevice, pTextureFile, NULL, NULL, &m_pShaderResourceView, NULL);
 	if (hr == S_OK)
+	{
+		m_pwszTexFileName = pTextureFile;
 		return true;
+	}
 
-	m_pwszTexFileName = pTextureFile;
-	
-
-	//D3DX11CreateShaderResourceViewFromMemory(pDevice, ,,);
 	return false;
 }
 
