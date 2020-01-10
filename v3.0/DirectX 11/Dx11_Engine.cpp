@@ -65,7 +65,7 @@ void Dx11_Engine::Run()
 		tickCount = timeGetTime();
 		float fTickDiff = (float)((tickCount - lastTickCount) / 1000.0);
 		dTickDuration += (double)((tickCount - lastTickCount) / 1000.0);
-		lastTickCount = tickCount;
+		
 
 		while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
@@ -83,9 +83,10 @@ void Dx11_Engine::Run()
 		sprintf_s(msgbuf, "Render Interval Tick %f\n", dTickDuration);
 		OutputDebugStringA(msgbuf);*/
 
-		//if (dTickDuration > 1)
+		if (fTickDiff > 0.125)
 		{
-			dTickDuration = 0; //Reset
+			lastTickCount = tickCount;
+			//dTickDuration = 0; //Reset
 
 			m_pGraphics->Process(fTickDiff);
 			m_pGraphics->Render(fTickDiff);

@@ -415,12 +415,12 @@ void Dx11_Tessellation::Render(ID3D11DeviceContext * _pDeviceContext, float _fTi
 	}
 }
 
-void Dx11_Tessellation::Render(ID3D11DeviceContext * _pDeviceContext, float _fTick, D3DXMATRIX _worldMat, D3DXMATRIX _viewMat, D3DXMATRIX _projMat)
+void Dx11_Tessellation::Render(ID3D11DeviceContext * _pDeviceContext, D3DXMATRIX _worldMat, D3DXMATRIX _viewMat, D3DXMATRIX _projMat, D3DXVECTOR3 _vCamPos)
 {
 	if (_pDeviceContext)
 	{	
 		//RenderNode		
-		m_pQuadTree->Render(_pDeviceContext, _fTick, _worldMat, _viewMat, _projMat);
+		m_pQuadTree->Render(_pDeviceContext, _worldMat, _viewMat, _projMat, _vCamPos);
 	}
 }
 

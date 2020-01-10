@@ -41,12 +41,12 @@ protected:
 	ID3D11PixelShader   *m_pPS = nullptr;
 	ID3D11InputLayout	*m_pInputLayout = nullptr;
 	ID3D11Buffer		*m_pWVPBuffer = nullptr, *m_pQuadColor = nullptr, *m_pTessellationBuffer = nullptr;
-
+	
 	Dx11_Terrain::stVertex  *m_pVertexList = nullptr;
 	stNode					*m_pRootNode = nullptr;
-	unsigned int			m_uiVertexCount;
-	unsigned int			m_uiQuadColorCounter;
-	bool					m_bUpdateWVP = false, m_bUpdateTessValue = true;
+	unsigned int			m_uiVertexCount, m_uiQuadColorCounter;	
+	bool					m_bUpdateTessValue = true;
+	D3DXVECTOR3				m_vCameraPos;
 
 	bool AddQuadNode(float _fCenterX, float _fCenterZ, float _fWidth);
 	bool IntializeShader(ID3D11Device * _pDevice);
@@ -56,7 +56,7 @@ protected:
 	void RenderQuadNodeWithTessellation(ID3D11DeviceContext* _pDeviceContext, stNode *_pNode);
 
 	void CalculateMeshDimension(unsigned int _uiVertexCount, float &_fCenterX, float &_fCenterZ, float &_fWidth);
-	void CreateTreeNode(ID3D11Device* _pDevice, stNode **_pNode, float _fCenterX, float _fCenterZ, float _fWidth);
+	void CreateTreeNode(ID3D11Device* _pDevice, stNode **_pNode, float _fCenterX, float _fCenterZ, float _fWidth, unsigned int _uiLOD);
 
 	bool IsTriangleContained(unsigned int _uiVertexIndex, float _fCenterX, float _fCenterZ, float _fWidth);
 	unsigned int CountTriangle(float _fCenterX, float _fCenterZ, float _fWidth);
@@ -67,6 +67,6 @@ public:
 	~Dx11_QuadTree();
 	bool BuildQuadTree(ID3D11Device* _pDevice, Dx11_Terrain* _pTerrain);
 	void Release();
-	void Render(ID3D11DeviceContext* _pDeviceContext, float _fTick, D3DXMATRIX _worldMat, D3DXMATRIX _viewMat, D3DXMATRIX _projMat);	
+	void Render(ID3D11DeviceContext* _pDeviceContext, D3DXMATRIX _worldMat, D3DXMATRIX _viewMat, D3DXMATRIX _projMat, D3DXVECTOR3 _vCam);	
 };
 

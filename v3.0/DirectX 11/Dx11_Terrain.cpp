@@ -3,8 +3,8 @@
 
 
 Dx11_Terrain::Dx11_Terrain()
-	:m_iWidth(150), 
-	m_iHeight(100)
+	:m_iWidth(15*10), 
+	m_iHeight(10*10)
 {
 
 }

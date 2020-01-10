@@ -1,5 +1,6 @@
 #include "Dx11_QuadTree.h"
 #include <fstream>
+#include <math.h>
 
 bool errorLogger(ID3D10Blob *_pErrorBuffer)
 {
@@ -295,7 +296,7 @@ void Dx11_QuadTree::RenderQuadNode(ID3D11DeviceContext* _pDeviceContext, stNode*
 
 void Dx11_QuadTree::RenderQuadNodeWithTessellation(ID3D11DeviceContext * _pDeviceContext, stNode * _pNode)
 {
-	unsigned int unChildCount = 0; //Child Count of Node _pNode
+	unsigned int unChildCount = 0; //Child Count of Node _pNode	
 	for (int i = 0; i < 4; i++)
 	{
 		if (_pNode->m_pChild[i])
@@ -315,10 +316,24 @@ void Dx11_QuadTree::RenderQuadNodeWithTessellation(ID3D11DeviceContext * _pDevic
 	_pDeviceContext->IASetVertexBuffers(0, 1, &_pNode->m_pVB, &stride, &offset);
 	_pDeviceContext->IASetIndexBuffer(_pNode->m_pIB, DXGI_FORMAT_R32_UINT, 0);
 	_pDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST/*D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST*/);
-		
 	
-	HRESULT hr;	
-	if (m_bUpdateTessValue)
+	float fLod = 0.0f;
+	float fCameraDistance = D3DXVec3Length(&(m_vCameraPos - D3DXVECTOR3(_pNode->fCenterX, 0, _pNode->fCenterZ)));
+	if (fCameraDistance > 10.0f)
+		fLod = 1.0;
+	else if (fCameraDistance <= 10.0f && fCameraDistance > 7.0f)
+		fLod = 2.0;
+	else if (fCameraDistance <= 7.0f && fCameraDistance > 4.0f)
+		fLod = 4.0;
+	else if (fCameraDistance <= 4.0f && fCameraDistance > 1.0f)
+		fLod = 8.0;
+	else if (fCameraDistance <= 1.0f)
+		fLod = 16.0;
+
+
+	//float fLod = pow(2.0, 30.0f - fCameraDistance);
+	HRESULT hr;
+	//if (m_bUpdateTessValue)
 	{
 		m_bUpdateTessValue = false;
 		D3D11_MAPPED_SUBRESOURCE mappedTessRes;
@@ -326,30 +341,18 @@ void Dx11_QuadTree::RenderQuadNodeWithTessellation(ID3D11DeviceContext * _pDevic
 		if (hr != S_OK)
 			return;
 		stTessellationBuffer *pTessData = (stTessellationBuffer *)mappedTessRes.pData;
-		pTessData->fTessellationAmount = 4.0f;
+		pTessData->fTessellationAmount = fLod;
 		for (int i = 0; i < 3; i++)
 			pTessData->fPadding[i] = 0.0f;
 		_pDeviceContext->Unmap(m_pTessellationBuffer, 0);
-	}	
-	_pDeviceContext->HSSetConstantBuffers(0, 1, &m_pTessellationBuffer);
+	}
 
-	if (m_bUpdateWVP)
-	{
-		m_bUpdateWVP = false;
-		D3D11_MAPPED_SUBRESOURCE mappedWVPResource;
-		hr = _pDeviceContext->Map(m_pWVPBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedWVPResource);
-		if (hr != S_OK)
-			return;
-		stWVPBuffer *pWVPData = (stWVPBuffer *)mappedWVPResource.pData;
-		pWVPData->worldMat = m_worldMat;
-		pWVPData->viewMat = m_viewMat;
-		pWVPData->projMat = m_projMat;
-		_pDeviceContext->Unmap(m_pWVPBuffer, 0);
-	}	
+	_pDeviceContext->HSSetConstantBuffers(0, 1, &m_pTessellationBuffer);		
 	_pDeviceContext->DSSetConstantBuffers(1, 1, &m_pWVPBuffer);
 
 	
-	m_uiQuadColorCounter++;
+	
+	/*m_uiQuadColorCounter++;
 	if (m_uiQuadColorCounter > 3)
 		m_uiQuadColorCounter = 0;
 	D3DXVECTOR4 *pNewQuadColor = GetColor(m_uiQuadColorCounter);
@@ -360,7 +363,7 @@ void Dx11_QuadTree::RenderQuadNodeWithTessellation(ID3D11DeviceContext * _pDevic
 	stQuadNodeColor *pQuadColor = (stQuadNodeColor *)mappedQuadColorRes.pData;
 	pQuadColor->vColor = *pNewQuadColor;
 	_pDeviceContext->Unmap(m_pQuadColor, 0);
-	_pDeviceContext->PSSetConstantBuffers(3, 1, &m_pQuadColor);
+	_pDeviceContext->PSSetConstantBuffers(3, 1, &m_pQuadColor);*/
 
 	_pDeviceContext->VSSetShader(m_pVS, nullptr, 0);
 	_pDeviceContext->HSSetShader(m_pHS, nullptr, 0);
@@ -375,7 +378,7 @@ void Dx11_QuadTree::RenderQuadNodeWithTessellation(ID3D11DeviceContext * _pDevic
 	_pDeviceContext->HSSetShader(nullptr, nullptr, 0);
 	_pDeviceContext->DSSetShader(nullptr, nullptr, 0);
 	_pDeviceContext->PSSetShader(nullptr, nullptr, 0);
-	delete pNewQuadColor;
+	//delete pNewQuadColor;
 }
 
 void Dx11_QuadTree::CalculateMeshDimension(unsigned int _uiVertexCount, float & _fCenterX, float & _fCenterZ, float & _fWidth)
@@ -412,13 +415,13 @@ void Dx11_QuadTree::CalculateMeshDimension(unsigned int _uiVertexCount, float & 
 	return;
 }
 
-void Dx11_QuadTree::CreateTreeNode(ID3D11Device * _pDevice, stNode **_pNode, float _fCenterX, float _fCenterZ, float _fWidth)
+void Dx11_QuadTree::CreateTreeNode(ID3D11Device * _pDevice, stNode **_pNode, float _fCenterX, float _fCenterZ, float _fWidth, unsigned int _uiLOD)
 {
 	*_pNode = new stNode();
 	(*_pNode)->iVertexCount = 0;
 	(*_pNode)->fCenterX = _fCenterX;
 	(*_pNode)->fCenterZ = _fCenterZ;
-	(*_pNode)->fWidth = _fWidth;
+	(*_pNode)->fWidth = _fWidth;	
 	for (int iChild = 0; iChild < 4; iChild++)
 		(*_pNode)->m_pChild[iChild] = nullptr;
 
@@ -482,6 +485,7 @@ void Dx11_QuadTree::CreateTreeNode(ID3D11Device * _pDevice, stNode **_pNode, flo
 	}
 	else
 	{
+		_uiLOD++;
 		//Create Four Child
 		for (int iChildIndex = 0; iChildIndex < 4; iChildIndex++)
 		{
@@ -490,7 +494,7 @@ void Dx11_QuadTree::CreateTreeNode(ID3D11Device * _pDevice, stNode **_pNode, flo
 
 			unsigned int iTriangles = CountTriangle((_fCenterX + fOffsetX), (_fCenterZ + fOffsetZ), (_fWidth / 2.0));
 			if (iTriangles > 0)
-				CreateTreeNode(_pDevice, &(*_pNode)->m_pChild[iChildIndex], _fCenterX + fOffsetX, _fCenterZ + fOffsetZ, _fWidth / 2.0);
+				CreateTreeNode(_pDevice, &(*_pNode)->m_pChild[iChildIndex], _fCenterX + fOffsetX, _fCenterZ + fOffsetZ, _fWidth / 2.0, _uiLOD);
 		}		
 	}
 }
@@ -597,7 +601,8 @@ bool Dx11_QuadTree::BuildQuadTree(ID3D11Device	*_pDevice, Dx11_Terrain	*_pTerrai
 
 	float centerX = 0.0f, centerZ = 0.0f, width = 0.0f;
 	CalculateMeshDimension(m_uiVertexCount, centerX, centerZ, width);
-	CreateTreeNode(_pDevice, &m_pRootNode, centerX, centerZ, width);
+	unsigned int lod = 0;
+	CreateTreeNode(_pDevice, &m_pRootNode, centerX, centerZ, width, lod);
 
 	//Vertex List Not Required Once QuadTree Build
 	if (m_pVertexList)
@@ -618,7 +623,7 @@ void Dx11_QuadTree::Release()
 	}
 }
 
-void Dx11_QuadTree::Render(ID3D11DeviceContext * _pDeviceContext, float _fTick, D3DXMATRIX _worldMat, D3DXMATRIX _viewMat, D3DXMATRIX _projMat)
+void Dx11_QuadTree::Render(ID3D11DeviceContext * _pDeviceContext, D3DXMATRIX _worldMat, D3DXMATRIX _viewMat, D3DXMATRIX _projMat, D3DXVECTOR3 _vCam)
 {
 	_pDeviceContext->IASetInputLayout(m_pInputLayout);
 
@@ -629,13 +634,25 @@ void Dx11_QuadTree::Render(ID3D11DeviceContext * _pDeviceContext, float _fTick, 
 	D3DXMatrixTranspose(&m_worldMat, &m_worldMat);
 	D3DXMatrixTranspose(&m_viewMat, &m_viewMat);
 	D3DXMatrixTranspose(&m_projMat, &m_projMat);
-	m_bUpdateWVP = true;
 	
 	m_uiQuadColorCounter = 0;
+		
+	D3D11_MAPPED_SUBRESOURCE mappedWVPResource;
+	HRESULT hr = _pDeviceContext->Map(m_pWVPBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedWVPResource);
+	if (hr != S_OK)
+		return;
+	stWVPBuffer *pWVPData = (stWVPBuffer *)mappedWVPResource.pData;
+	pWVPData->worldMat = m_worldMat;
+	pWVPData->viewMat = m_viewMat;
+	pWVPData->projMat = m_projMat;
+	_pDeviceContext->Unmap(m_pWVPBuffer, 0);
+	
+	m_vCameraPos = _vCam;
 
 #ifndef _TESSELLATION_
 	RenderQuadNode(_pDeviceContext, m_pRootNode);
 #else
 	RenderQuadNodeWithTessellation(_pDeviceContext, m_pRootNode);
 #endif // !_TESS
+
 }

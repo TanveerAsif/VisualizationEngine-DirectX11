@@ -61,7 +61,7 @@ public:
 
 	bool Init(ID3D11Device *_pDevice, ID3D11DeviceContext *_pDeviceContext);
 	void Render(ID3D11DeviceContext *_pDeviceContext, float _fTick ,D3DXMATRIX _worldMat, D3DXMATRIX _viewMat, D3DXMATRIX _projMat, float _fCameraDistance);
-	void Render(ID3D11DeviceContext *_pDeviceContext, float _fTick, D3DXMATRIX _worldMat, D3DXMATRIX _viewMat, D3DXMATRIX _projMat);
+	void Render(ID3D11DeviceContext *_pDeviceContext, D3DXMATRIX _worldMat, D3DXMATRIX _viewMat, D3DXMATRIX _projMat, D3DXVECTOR3 _vCamPos);
 	void Release();
 	void UpdateTessellationFactor(int _iDelta);
 };

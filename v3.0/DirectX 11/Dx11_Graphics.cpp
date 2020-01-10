@@ -164,7 +164,7 @@ void Dx11_Graphics::RenderScene(float _fTick)
 			//m_pTessellation->Render(pDeviceContext, _fTick, worldMat, viewMat, projectionMat, fCamDistance);			
 
 			//QuadTree
-			m_pTessellation->Render(pDeviceContext, _fTick, worldMat, viewMat, projectionMat);
+			m_pTessellation->Render(pDeviceContext, worldMat, viewMat, projectionMat, m_pCamera->GetPosition());
 		}
 			
 
