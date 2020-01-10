@@ -319,15 +319,15 @@ void Dx11_QuadTree::RenderQuadNodeWithTessellation(ID3D11DeviceContext * _pDevic
 	
 	float fLod = 0.0f;
 	float fCameraDistance = D3DXVec3Length(&(m_vCameraPos - D3DXVECTOR3(_pNode->fCenterX, 0, _pNode->fCenterZ)));
-	if (fCameraDistance > 10.0f)
+	if (fCameraDistance > 15.0f)
 		fLod = 1.0;
-	else if (fCameraDistance <= 10.0f && fCameraDistance > 7.0f)
+	else if (fCameraDistance <= 15.0f && fCameraDistance > 7.0f)
 		fLod = 2.0;
-	else if (fCameraDistance <= 7.0f && fCameraDistance > 4.0f)
+	else if (fCameraDistance <= 7.0f && fCameraDistance > 2.0f)
 		fLod = 4.0;
-	else if (fCameraDistance <= 4.0f && fCameraDistance > 1.0f)
+	else if (fCameraDistance <= 2.0f && fCameraDistance > 1.0f)
 		fLod = 8.0;
-	else if (fCameraDistance <= 1.0f)
+	else //if (fCameraDistance <= 1.0f)
 		fLod = 16.0;
 
 
