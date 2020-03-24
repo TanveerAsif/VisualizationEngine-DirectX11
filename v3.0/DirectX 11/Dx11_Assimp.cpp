@@ -228,9 +228,9 @@ bool Dx11_Assimp::InitAssimp(HWND hWnd, ID3D11Device * pDevice, ID3D11DeviceCont
 	////////bFlag = LoadMesh("Data/Spider_ascii.stl");
 	////////bFlag = LoadMesh("Data/spider.obj");
 	//////////bFlag = LoadMesh("Data/L200-OBJ/L200-OBJ.obj");
-	//bFlag = LoadMesh("../../Data/Spider/spider.obj");
+	bFlag = LoadMesh("../../Data/Spider/spider.obj");
 	//bFlag = LoadMesh("../../Data/Alto/alto.x");
-	bFlag = LoadMesh("../../Data/Tug/tug.x");
+	//bFlag = LoadMesh("../../Data/Tug/tug.x");
 	
 
 	return bFlag;

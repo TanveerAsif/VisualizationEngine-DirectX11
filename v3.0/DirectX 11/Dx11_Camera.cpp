@@ -1,6 +1,12 @@
 #include "Dx11_Camera.h"
 
 
+//  x = r * cos(theta) * cos(alpha)
+//  y = r * cos(theta) * sin(alpha)
+//  z = r * cos(theta)
+
+
+
 Dx11_Camera::Dx11_Camera()
 {
 	m_fYaw = m_fPitch = m_fRoll = 0.0f;
@@ -21,11 +27,9 @@ Dx11_Camera::Dx11_Camera()
 	D3DXMatrixRotationYawPitchRoll(&matRotation, m_fYaw, m_fPitch, m_fRoll);
 
 
-	D3DXVECTOR3 vTarget;
-	D3DXVec3Add(&vTarget, &m_vPos, &m_vFrwdDir);
-	D3DXMatrixLookAtLH(&m_ViewMat, &m_vPos, &vTarget, &m_vUp);
-
-
+	D3DXVECTOR3 vAt;
+	D3DXVec3Add(&vAt, &m_vPos, &m_vFrwdDir);
+	D3DXMatrixLookAtLH(&m_ViewMat, &m_vPos, &vAt, &m_vUp);
 }
 
 
@@ -37,7 +41,7 @@ Dx11_Camera::~Dx11_Camera()
 
 //void Dx11_Camera::Process()
 //{
-//1
+//
 //	
 //	D3DXVECTOR3 up = D3DXVECTOR3(0,1,0);
 //	
@@ -194,10 +198,21 @@ void Dx11_Camera::UpdateCamera(char in)
 			break;
 		}*/
 
-		/*case WM_MOUSEHWHEEL:
-			m_fPitch -= 0.05f;*/
-
+		case 'V':
+		{
+			m_fPitch -= 0.01f;
+			
+			/*D3DXMATRIX rotMatrix;
+			D3DXMatrixRotationYawPitchRoll(&rotMatrix, m_fYaw, m_fPitch, m_fRoll);
+			D3DXVec3TransformCoord(&m_vUp, &m_vUp, &rotMatrix);
+			D3DXVec3TransformCoord(&m_vFrwdDir, &m_vFrwdDir, &rotMatrix);
+						
+			D3DXVECTOR3 vAt = m_vFrwdDir + m_vPos;
+			D3DXMatrixLookAtLH(&m_ViewMat, &m_vPos, &vAt, &m_vFrwdDir);
+			return;*/
 			break;
+		}	
+
 	}
 
 	D3DXVECTOR3 vDir;

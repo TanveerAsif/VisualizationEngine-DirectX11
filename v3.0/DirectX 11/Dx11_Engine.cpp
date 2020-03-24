@@ -150,6 +150,12 @@ bool Dx11_Engine::UpdateKeyPress()
 		m_pGraphics->UpdateCamera('R');
 	}
 
+	if (m_pInput->IsKeyDown('V'))
+	{
+		m_pInput->KeyUp('V');
+		m_pGraphics->UpdateCamera('V');
+	}
+
 	if (m_pInput->IsKeyDown('T'))
 	{
 		m_pInput->KeyUp('T');

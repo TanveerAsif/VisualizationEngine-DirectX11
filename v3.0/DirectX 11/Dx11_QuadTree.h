@@ -1,6 +1,6 @@
 #pragma once
 #include "Dx11_Terrain.h"
-#define _TESSELLATION_
+//#define _TESSELLATION_
 
 class Dx11_QuadTree
 {

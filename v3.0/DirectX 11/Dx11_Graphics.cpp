@@ -61,18 +61,26 @@ bool Dx11_Graphics::Initialize(HWND hWnd, UINT _width, UINT _height)
 		if (!bRetValue)
 			return bRetValue;
 
-		/*m_pAssimp = new Dx11_Assimp();
+#ifdef _MESH_RENDERING_
+
+		m_pAssimp = new Dx11_Assimp();
 		bRetValue = m_pAssimp->InitAssimp(hWnd, pDevice, pDeviceContext);
 		if (!bRetValue)
 		{
 			MessageBox(hWnd, L"FAILED TO INITIALIZE ASSIMP : ", L"error", MB_ICONEXCLAMATION | MB_OK);
 			return bRetValue;
-		}*/
+		}
+#endif
+		
+
+#ifdef _TESSELLATION_
 
 		m_pTessellation = new Dx11_Tessellation();
 		bRetValue = m_pTessellation->Init(pDevice, pDeviceContext);
 		if (!bRetValue)
 			return bRetValue;
+#endif
+		
 
 	}
 	else
@@ -142,8 +150,10 @@ void Dx11_Graphics::RenderScene(float _fTick)
 		projectionMat = m_pDirect3D->GetPerspectiveProjectionMatrix();
 		orthoMat = m_pDirect3D->GetOrthogonalProjectionMatrix();
 
+#ifdef _MESH_RENDERING_
+		
 		if (m_pAssimp)
-		{		
+		{
 			worldMat = m_pDirect3D->GetWorldMatrix();
 			D3DXMatrixTranslation(&matTranslate, 0.0f, -10.0f, 100.0f);
 			D3DXMatrixRotationY(&matRotY, -1 * D3DX_PI * 90 / 180);
@@ -153,8 +163,13 @@ void Dx11_Graphics::RenderScene(float _fTick)
 			m_pAssimp->Render(m_pDirect3D->GetDevice(), pDeviceContext, worldMat, viewMat, projectionMat);
 		}
 
+#endif // _MESH_RENDERING_
+
+		
+#ifdef _TESSELLATION_
+		
 		if (m_pTessellation)
-		{			
+		{
 			D3DXMatrixRotationX(&matRotY, -1 * D3DX_PI * 90 / 180);
 			worldMat = m_pDirect3D->GetWorldMatrix();
 			//worldMat = matRotY * worldMat;
@@ -166,8 +181,10 @@ void Dx11_Graphics::RenderScene(float _fTick)
 			//QuadTree
 			m_pTessellation->Render(pDeviceContext, worldMat, viewMat, projectionMat, m_pCamera->GetPosition());
 		}
-			
 
+#endif // _TESSELLATION_
+
+	
 		//RENDER TEXT
 		//m_pDirect3D->SetDepthBufferOFF();
 		m_pDirect3D->EnableBlendState();
